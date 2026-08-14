@@ -2,6 +2,7 @@ import { Analytics } from "@vercel/analytics/next"
 import type { Metadata, Viewport } from "next"
 import { JetBrains_Mono, Syne } from "next/font/google"
 import "./globals.css"
+import { THEME_INIT_SCRIPT } from "@/lib/theme"
 
 const _syne = Syne({
   subsets: ["latin"],
@@ -15,7 +16,7 @@ const _jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Nerd Life Balance — GitHub Activity Analyzer",
+  title: "Code Life Balance: GitHub Activity Analyzer",
   description:
     "Analyze your GitHub activity, visualize commit patterns, and understand your coding work-life balance.", 
 }
@@ -34,7 +35,10 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="bg-background">
+    <html lang="en" className="bg-background" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="font-sans antialiased">
         {children}
         {process.env.NODE_ENV === "production" && <Analytics />}

@@ -4,11 +4,11 @@ import useSWR from "swr"
 import { BalanceScoreCard } from "@/components/balance-score-card"
 import { CommitTimingChart } from "@/components/commit-timing-chart"
 import { LanguageBreakdownChart } from "@/components/language-breakdown-chart"
-import { ActivityHeatmap } from "@/components/activity-heatmap"
 import { StatsOverview } from "@/components/stats-overview"
 import { TopReposList } from "@/components/top-repos-list"
 import { TimeOfDayPanel } from "@/components/time-of-day-panel"
 import { EventBreakdown } from "@/components/event-breakdown"
+import { ShareButton } from "@/components/share-button"
 import { Loader2, AlertCircle, RefreshCcw } from "lucide-react"
 import type { AnalysisData } from "@/lib/github"
 
@@ -36,7 +36,7 @@ export function DashboardClient() {
         </div>
         <div className="text-center space-y-1">
           <p className="text-sm font-medium text-foreground">Analyzing your GitHub activity...</p>
-          <p className="text-xs text-muted-foreground">Fetching repos, events and computing insights</p>
+          <p className="text-sm text-muted-foreground">Fetching repos, events and computing insights</p>
         </div>
       </div>
     )
@@ -49,7 +49,7 @@ export function DashboardClient() {
           <AlertCircle className="w-6 h-6 text-destructive" />
         </div>
         <p className="text-sm font-medium text-foreground">Analysis failed</p>
-        <p className="text-xs text-muted-foreground max-w-sm text-center">{error.message}</p>
+        <p className="text-sm text-muted-foreground max-w-sm text-center">{error.message}</p>
         <button
           onClick={() => mutate()}
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
@@ -64,7 +64,15 @@ export function DashboardClient() {
   if (!data) return null
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
+      {/* Share row */}
+      <div className="flex items-center justify-between gap-4">
+        <p className="text-sm text-muted-foreground">
+          Your results are private until you share them.
+        </p>
+        <ShareButton data={data} />
+      </div>
+
       {/* Stats overview row */}
       <StatsOverview
         totalCommits={data.totalCommits}
@@ -80,7 +88,7 @@ export function DashboardClient() {
       />
 
       {/* Balance score + commit timing side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
           <BalanceScoreCard
             score={data.balanceScore}
@@ -106,7 +114,7 @@ export function DashboardClient() {
         </div>
       </div>
 
-      {/* Active hours deep dive — full width */}
+      {/* Active hours deep dive, full width */}
       <TimeOfDayPanel
         commitsByHour={data.commitsByHour}
         timeSessions={data.timeSessions}
@@ -114,11 +122,8 @@ export function DashboardClient() {
         hourlyProductivity={data.hourlyProductivity}
       />
 
-      {/* Activity heatmap full width */}
-      <ActivityHeatmap events={data.events} weeklyActivity={data.weeklyActivity} />
-
       {/* Event breakdown + language side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <EventBreakdown
           eventTypeBreakdown={data.eventTypeBreakdown}
           totalEvents={data.events.length}

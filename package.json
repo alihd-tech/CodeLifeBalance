@@ -1,7 +1,12 @@
 {
-  "name": "my-project",
+  "name": "code-life-balance",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alihd-tech/CodeLifeBalance.git"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

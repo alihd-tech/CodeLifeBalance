@@ -296,7 +296,7 @@ function computeAnalysis(repos: Repo[], events: Event[]): Omit<AnalysisData, "re
   const recommendations: string[] = []
   const DAYS_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
   if (weekendCommitPct > 30) {
-    recommendations.push(`${weekendCommitPct}% of your commits happen on weekends — try protecting your downtime.`)
+    recommendations.push(`${weekendCommitPct}% of your commits happen on weekends. Try protecting your downtime.`)
   }
   if (lateNightCommitPct > 10) {
     recommendations.push(`${lateNightCommitPct}% of commits are late-night (11pm–4am). Consistent sleep improves focus and code quality.`)
@@ -305,18 +305,18 @@ function computeAnalysis(repos: Repo[], events: Event[]): Omit<AnalysisData, "re
     recommendations.push(`More than half your commits happen outside working hours. Consider setting clearer work boundaries.`)
   }
   if (avgCommitsPerDay > 15) {
-    recommendations.push(`Averaging ${avgCommitsPerDay} commits/day recently — intense sprints risk burnout. Schedule rest days.`)
+    recommendations.push(`Averaging ${avgCommitsPerDay} commits/day recently. Intense sprints risk burnout. Schedule rest days.`)
   }
   if (streakDays > 20) {
     recommendations.push(`${streakDays}-day activity streak is impressive, but remember to schedule intentional rest days.`)
   }
   if (nightPct > 20) {
-    recommendations.push(`${nightPct}% of your coding happens at night. Your peak hour is ${formatHour(peakHour)} — consider shifting earlier for better energy.`)
+    recommendations.push(`${nightPct}% of your coding happens at night. Your peak hour is ${formatHour(peakHour)}, so consider shifting earlier for better energy.`)
   }
   if (recommendations.length === 0) {
     recommendations.push("Great balance! Your commit patterns suggest healthy coding habits.")
     if (morningPct >= 20) {
-      recommendations.push(`You do ${morningPct}% of your work in the morning — great time for deep focus.`)
+      recommendations.push(`You do ${morningPct}% of your work in the morning, a great time for deep focus.`)
     }
     recommendations.push("Keep maintaining clear boundaries between work hours and personal time.")
   }

@@ -100,10 +100,10 @@ export function LanguageBreakdownChart({ languages, topLangs }: LanguageBreakdow
     <div className="rounded-xl border border-border bg-card p-6 space-y-4">
       <div>
         <h3 className="font-semibold text-foreground">Language Breakdown</h3>
-        <p className="text-xs text-muted-foreground mt-0.5">By number of repositories</p>
+        <p className="text-sm text-muted-foreground mt-0.5">By number of repositories</p>
       </div>
 
-      <div className="flex gap-4 items-center">
+      <div className="flex gap-6 items-center">
         {/* Donut */}
         <ChartContainer config={chartConfig} className="h-44 w-44 flex-shrink-0">
           <PieChart>
@@ -131,9 +131,9 @@ export function LanguageBreakdownChart({ languages, topLangs }: LanguageBreakdow
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
-                  <span className="text-xs font-medium text-foreground truncate">{entry.name}</span>
+                  <span className="text-sm font-medium text-foreground truncate">{entry.name}</span>
                 </div>
-                <span className="text-xs text-muted-foreground font-mono flex-shrink-0 ml-2">{entry.pct}%</span>
+                <span className="text-sm text-muted-foreground font-mono flex-shrink-0 ml-2">{entry.pct}%</span>
               </div>
               <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                 <div

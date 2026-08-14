@@ -104,14 +104,14 @@ export function StatsOverview({
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
       {stats.map(({ icon: Icon, label, value, sub, color, bg }) => (
-        <div key={label} className="rounded-xl border border-border bg-card p-4 flex flex-col gap-3 hover:border-primary/30 transition-colors">
+        <div key={label} className="rounded-xl border border-border bg-card p-5 flex flex-col gap-3 hover:border-primary/30 transition-colors">
           <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}>
             <Icon className={`w-4 h-4 ${color}`} />
           </div>
           <div>
             <div className="text-xl font-bold text-foreground font-mono leading-none">{value}</div>
-            <div className="text-xs font-medium text-foreground mt-1">{label}</div>
-            <div className="text-[10px] text-muted-foreground mt-0.5">{sub}</div>
+            <div className="text-sm font-medium text-foreground mt-1">{label}</div>
+            <div className="text-xs text-muted-foreground mt-0.5">{sub}</div>
           </div>
         </div>
       ))}

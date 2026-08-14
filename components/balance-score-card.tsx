@@ -159,13 +159,13 @@ export function BalanceScoreCard({
   ]
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 flex flex-col gap-5">
+    <div className="rounded-xl border border-border bg-card p-6 flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm font-medium text-muted-foreground">Work-Life Balance</p>
         </div>
-        <div className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${bgClass} ${textClass}`}>
+        <div className={`px-2.5 py-1 rounded-full text-sm font-semibold border ${bgClass} ${textClass}`}>
           {label}
         </div>
       </div>
@@ -189,9 +189,9 @@ export function BalanceScoreCard({
             <div className={`text-lg font-bold font-mono ${good ? "text-[oklch(0.70_0.18_155)]" : "text-[oklch(0.68_0.22_25)]"}`}>
               {value}
             </div>
-            <div className="text-xs font-medium text-foreground mt-0.5">{ml}</div>
-            <div className="text-[10px] text-muted-foreground">{sub}</div>
-            <div className={`text-[10px] mt-1 font-medium ${good ? "text-[oklch(0.70_0.18_155)]" : "text-[oklch(0.68_0.22_25)]"}`}>
+            <div className="text-sm font-medium text-foreground mt-0.5">{ml}</div>
+            <div className="text-xs text-muted-foreground">{sub}</div>
+            <div className={`text-xs mt-1 font-medium ${good ? "text-[oklch(0.70_0.18_155)]" : "text-[oklch(0.68_0.22_25)]"}`}>
               {good ? goodText : warnText}
             </div>
           </div>
@@ -200,24 +200,24 @@ export function BalanceScoreCard({
 
       {/* Session distribution mini bars */}
       <div className="space-y-2">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Time distribution</p>
+        <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Time distribution</p>
         {sessionBars.map(({ label: sl, pct, color: sc }) => (
           <div key={sl} className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground w-20 flex-shrink-0">{sl}</span>
+            <span className="text-sm text-muted-foreground w-20 flex-shrink-0">{sl}</span>
             <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-500"
                 style={{ width: `${pct}%`, backgroundColor: sc }}
               />
             </div>
-            <span className="text-xs text-foreground font-mono w-8 text-right flex-shrink-0">{pct}%</span>
+            <span className="text-sm text-foreground font-mono w-8 text-right flex-shrink-0">{pct}%</span>
           </div>
         ))}
       </div>
 
       {/* Recommendations */}
       <div className="space-y-2 border-t border-border pt-4">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+        <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
           <TrendingUp className="w-3.5 h-3.5" />
           Insights
         </p>
@@ -230,7 +230,7 @@ export function BalanceScoreCard({
               ) : (
                 <AlertTriangle className="w-3.5 h-3.5 text-[oklch(0.68_0.22_25)] flex-shrink-0 mt-0.5" />
               )}
-              <span className="leading-relaxed text-muted-foreground text-xs">{rec}</span>
+              <span className="leading-relaxed text-muted-foreground text-sm">{rec}</span>
             </div>
           )
         })}

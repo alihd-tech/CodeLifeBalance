@@ -103,18 +103,18 @@ export function ActivityHeatmap({ events, weeklyActivity }: ActivityHeatmapProps
   const maxMonthly = Math.max(...monthlyData.map((m) => m.commits), 1)
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 space-y-5">
+    <div className="rounded-xl border border-border bg-card p-6 space-y-6">
       <div className="flex items-start justify-between">
         <div>
           <h3 className="font-semibold text-foreground">Contribution Activity</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">Last {NUM_WEEKS} weeks of push events</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Last {NUM_WEEKS} weeks of push events</p>
         </div>
         <div className="flex items-center gap-1 p-0.5 rounded-lg bg-secondary border border-border">
           {(["trend", "monthly"] as const).map((v) => (
             <button
               key={v}
               onClick={() => setView(v)}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                 view === v
                   ? "bg-card text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -134,7 +134,7 @@ export function ActivityHeatmap({ events, weeklyActivity }: ActivityHeatmapProps
             {Array.from({ length: NUM_WEEKS }, (_, col) => {
               const monthEntry = weeks.find((w) => w.col === col)
               return (
-                <div key={col} className="w-[18px] mr-[2px] text-[9px] text-muted-foreground">
+                <div key={col} className="w-[18px] mr-[2px] text-[11px] text-muted-foreground">
                   {monthEntry?.label ?? ""}
                 </div>
               )
@@ -147,7 +147,7 @@ export function ActivityHeatmap({ events, weeklyActivity }: ActivityHeatmapProps
               {DAYS_LABEL.map((d, i) => (
                 <div
                   key={i}
-                  className="w-4 h-4 text-[9px] text-muted-foreground flex items-center justify-center"
+                  className="w-4 h-4 text-[11px] text-muted-foreground flex items-center justify-center"
                 >
                   {i % 2 === 1 ? d : ""}
                 </div>
@@ -178,7 +178,7 @@ export function ActivityHeatmap({ events, weeklyActivity }: ActivityHeatmapProps
 
           {/* Legend */}
           <div className="flex items-center gap-1.5 mt-3 ml-6">
-            <span className="text-[10px] text-muted-foreground">Less</span>
+            <span className="text-xs text-muted-foreground">Less</span>
             {[0.2, 0.45, 0.7, 1].map((op, i) => (
               <div
                 key={i}
@@ -186,7 +186,7 @@ export function ActivityHeatmap({ events, weeklyActivity }: ActivityHeatmapProps
                 style={{ backgroundColor: `oklch(0.65 0.22 264 / ${op})` }}
               />
             ))}
-            <span className="text-[10px] text-muted-foreground">More</span>
+            <span className="text-xs text-muted-foreground">More</span>
           </div>
         </div>
       </div>
@@ -195,7 +195,7 @@ export function ActivityHeatmap({ events, weeklyActivity }: ActivityHeatmapProps
       <div className="border-t border-border pt-4">
         {view === "trend" && weeklyActivity.length > 0 && (
           <>
-            <p className="text-xs font-medium text-muted-foreground mb-3">Weekly commit trend</p>
+            <p className="text-sm font-medium text-muted-foreground mb-3">Weekly commit trend</p>
             <ChartContainer config={chartConfig} className="h-32 w-full">
               <AreaChart
                 data={weeklyActivity}
@@ -241,7 +241,7 @@ export function ActivityHeatmap({ events, weeklyActivity }: ActivityHeatmapProps
 
         {view === "monthly" && monthlyData.length > 0 && (
           <>
-            <p className="text-xs font-medium text-muted-foreground mb-3">Monthly commits (last 12 months)</p>
+            <p className="text-sm font-medium text-muted-foreground mb-3">Monthly commits (last 12 months)</p>
             <ChartContainer config={chartConfig} className="h-32 w-full">
               <BarChart
                 data={monthlyData}

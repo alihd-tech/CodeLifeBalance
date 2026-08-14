@@ -41,7 +41,7 @@ export function EventBreakdown({ eventTypeBreakdown, totalEvents }: EventBreakdo
     <div className="rounded-xl border border-border bg-card p-6 space-y-4">
       <div>
         <h3 className="font-semibold text-foreground">Activity Breakdown</h3>
-        <p className="text-xs text-muted-foreground mt-0.5">
+        <p className="text-sm text-muted-foreground mt-0.5">
           {totalEvents} total GitHub events in visible window
         </p>
       </div>
@@ -88,7 +88,7 @@ export function EventBreakdown({ eventTypeBreakdown, totalEvents }: EventBreakdo
         {data.map((e, i) => (
           <div
             key={e.type}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border bg-secondary/50 text-xs"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border bg-secondary/50 text-sm"
           >
             <div
               className="w-2 h-2 rounded-full"

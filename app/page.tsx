@@ -14,6 +14,7 @@ import {
   FlameKindling,
   ArrowRight,
 } from "lucide-react"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default async function HomePage() {
   const session = await getSession()
@@ -26,27 +27,30 @@ export default async function HomePage() {
 
       {/* ── Navigation ── */}
       <header className="sticky top-0 z-50 border-b border-border/60 backdrop-blur-md bg-background/80">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded bg-primary flex items-center justify-center shrink-0">
-              <Activity className="w-3.5 h-3.5 text-primary-foreground" strokeWidth={2.5} />
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
+              <Activity className="w-4.5 h-4.5 text-primary-foreground" strokeWidth={2.5} />
             </div>
-            <span className="font-bold text-base tracking-tight text-foreground">
-              Nerd Life Balance
+            <span className="font-bold text-lg tracking-tight text-foreground">
+              Code Life Balance
             </span>
           </div>
-          <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
-            <span className="text-foreground/40 font-mono text-xs">v2.0</span>
+          <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-muted-foreground">
+            <span className="font-mono text-sm">v2.0</span>
             <span>Features</span>
             <span>How it works</span>
           </nav>
-          <Link
-            href="/api/auth"
-            className="flex items-center gap-2 px-4 py-2 rounded-md border border-border bg-card text-sm font-medium text-foreground hover:border-primary/60 hover:text-primary transition-colors"
-          >
-            <GitHubLogoIcon className="w-4 h-4" />
-            Sign in
-          </Link>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <ThemeToggle />
+            <Link
+              href="/api/auth"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-card text-sm font-semibold text-foreground hover:border-primary/60 hover:text-primary transition-colors"
+            >
+              <GitHubLogoIcon className="w-4 h-4" />
+              Sign in
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -64,7 +68,7 @@ export default async function HomePage() {
 
           <div className="relative flex flex-col items-center text-center">
             {/* Eyebrow badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/8 text-primary text-xs font-mono font-medium mb-10 tracking-wider uppercase">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/8 text-primary text-sm font-mono font-medium mb-10 tracking-wider uppercase">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
               GitHub Activity Analyzer
             </div>
@@ -75,9 +79,9 @@ export default async function HomePage() {
               <br />
               <span className="text-primary">live to code</span>
               <br />
-              <span className="text-foreground/40">— and when</span>
+              <span className="text-muted-foreground">and when</span>
               <br />
-              <span className="text-foreground/40">{"you don't"}</span>
+              <span className="text-muted-foreground">{"you don't"}</span>
             </h1>
 
             {/* Subheading */}
@@ -96,7 +100,7 @@ export default async function HomePage() {
                 Analyze my GitHub
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
               </Link>
-              <p className="text-xs text-muted-foreground font-mono">
+              <p className="text-sm text-muted-foreground font-mono">
                 read-only &middot; no data stored
               </p>
             </div>
@@ -109,17 +113,17 @@ export default async function HomePage() {
               <span className="w-3 h-3 rounded-full bg-destructive/70" />
               <span className="w-3 h-3 rounded-full bg-[oklch(0.78_0.19_55)]/70" />
               <span className="w-3 h-3 rounded-full bg-primary/70" />
-              <span className="ml-3 font-mono text-xs text-muted-foreground">
-                nerd-life-balance — analysis
+              <span className="ml-3 font-mono text-sm text-muted-foreground">
+                code-life-balance analysis
               </span>
             </div>
             {/* Content */}
             <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/60">
 
               {/* Left: mock heatmap */}
-              <div className="p-5 col-span-2">
-                <p className="font-mono text-xs text-muted-foreground mb-3 uppercase tracking-widest">
-                  Contribution activity — last 26 weeks
+              <div className="p-6 col-span-2">
+                <p className="font-mono text-sm text-muted-foreground mb-3 uppercase tracking-widest">
+                  Contribution activity, last 26 weeks
                 </p>
                 <div className="flex flex-col gap-1">
                   {Array.from({ length: 7 }).map((_, row) => (
@@ -144,7 +148,7 @@ export default async function HomePage() {
                   ))}
                 </div>
                 {/* Mock hourly bars */}
-                <p className="font-mono text-xs text-muted-foreground mt-5 mb-2 uppercase tracking-widest">
+                <p className="font-mono text-sm text-muted-foreground mt-5 mb-2 uppercase tracking-widest">
                   Commit density by hour
                 </p>
                 <div className="flex items-end gap-0.5 h-10">
@@ -167,23 +171,23 @@ export default async function HomePage() {
                   })}
                 </div>
                 <div className="flex justify-between mt-1">
-                  <span className="font-mono text-[10px] text-muted-foreground/50">12am</span>
-                  <span className="font-mono text-[10px] text-muted-foreground/50">6am</span>
-                  <span className="font-mono text-[10px] text-muted-foreground/50">12pm</span>
-                  <span className="font-mono text-[10px] text-muted-foreground/50">6pm</span>
-                  <span className="font-mono text-[10px] text-muted-foreground/50">11pm</span>
+                  <span className="font-mono text-xs text-muted-foreground">12am</span>
+                  <span className="font-mono text-xs text-muted-foreground">6am</span>
+                  <span className="font-mono text-xs text-muted-foreground">12pm</span>
+                  <span className="font-mono text-xs text-muted-foreground">6pm</span>
+                  <span className="font-mono text-xs text-muted-foreground">11pm</span>
                 </div>
               </div>
 
               {/* Right: mock stat callouts */}
-              <div className="p-5 flex flex-col gap-4">
+              <div className="p-6 flex flex-col gap-4">
                 <StatBlock label="Balance Score" value="74" unit="/100" accent />
                 <StatBlock label="Peak Hour" value="10pm" unit="" />
                 <StatBlock label="Longest Streak" value="21" unit="days" />
                 <StatBlock label="After-Hours" value="38" unit="%" warn />
                 <StatBlock label="Repos Analyzed" value="42" unit="" />
                 <div className="mt-auto pt-3 border-t border-border/60">
-                  <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
+                  <p className="font-mono text-xs text-muted-foreground leading-relaxed">
                     <span className="text-primary">{">"}</span> 3 recommendations generated<br />
                     <span className="text-primary">{">"}</span> Top lang: TypeScript (61%)<br />
                     <span className="text-primary">{">"}</span> Most active: Saturday
@@ -198,7 +202,7 @@ export default async function HomePage() {
         {/* ── Features ── */}
         <section className="max-w-6xl mx-auto px-6 pb-24">
           <div className="flex items-center gap-3 mb-8">
-            <span className="font-mono text-xs text-muted-foreground uppercase tracking-widest">
+            <span className="font-mono text-sm text-muted-foreground uppercase tracking-widest">
               What{"'"}s inside
             </span>
             <div className="flex-1 h-px bg-border/60" />
@@ -263,13 +267,13 @@ export default async function HomePage() {
             ].map(({ icon: Icon, title, desc, tag }) => (
               <div
                 key={title}
-                className="group relative p-5 rounded-lg border border-border/70 bg-card hover:border-primary/40 hover:bg-primary/[0.03] transition-all"
+                className="group relative p-6 rounded-lg border border-border/70 bg-card hover:border-primary/40 hover:bg-primary/[0.03] transition-all"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center">
                     <Icon className="w-4 h-4 text-primary" strokeWidth={1.75} />
                   </div>
-                  <span className="font-mono text-[10px] text-muted-foreground/60 uppercase tracking-widest border border-border/50 rounded px-1.5 py-0.5">
+                  <span className="font-mono text-xs text-muted-foreground uppercase tracking-widest border border-border/50 rounded px-1.5 py-0.5">
                     {tag}
                   </span>
                 </div>
@@ -284,7 +288,7 @@ export default async function HomePage() {
         <section className="border-t border-border/60 bg-card/40">
           <div className="max-w-6xl mx-auto px-6 py-20">
             <div className="flex items-center gap-3 mb-12">
-              <span className="font-mono text-xs text-muted-foreground uppercase tracking-widest">
+              <span className="font-mono text-sm text-muted-foreground uppercase tracking-widest">
                 How it works
               </span>
               <div className="flex-1 h-px bg-border/60" />
@@ -311,7 +315,7 @@ export default async function HomePage() {
 
         {/* ── Final CTA ── */}
         <section className="max-w-6xl mx-auto px-6 py-24 flex flex-col items-center text-center">
-          <p className="font-mono text-xs text-primary uppercase tracking-widest mb-4">
+          <p className="font-mono text-sm text-primary uppercase tracking-widest mb-4">
             Ready?
           </p>
           <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-balance mb-6">
@@ -335,9 +339,9 @@ export default async function HomePage() {
             <div className="w-5 h-5 rounded bg-primary/80 flex items-center justify-center">
               <Activity className="w-3 h-3 text-primary-foreground" strokeWidth={2.5} />
             </div>
-            <span className="font-bold text-sm text-foreground">Nerd Life Balance</span>
+            <span className="font-bold text-sm text-foreground">Code Life Balance</span>
           </div>
-          <p className="font-mono text-xs text-muted-foreground">
+          <p className="font-mono text-sm text-muted-foreground">
             GitHub REST API &middot; Read-only OAuth &middot; No data stored
           </p>
         </div>
@@ -362,12 +366,12 @@ function StatBlock({
 }) {
   return (
     <div>
-      <p className="font-mono text-[10px] text-muted-foreground/60 uppercase tracking-widest mb-0.5">
+      <p className="font-mono text-xs text-muted-foreground uppercase tracking-widest mb-0.5">
         {label}
       </p>
       <p className={`font-mono font-bold text-xl leading-none ${accent ? "text-primary" : warn ? "text-[oklch(0.78_0.19_55)]" : "text-foreground"}`}>
         {value}
-        <span className="text-xs font-normal text-muted-foreground ml-1">{unit}</span>
+        <span className="text-sm font-normal text-muted-foreground ml-1">{unit}</span>
       </p>
     </div>
   )

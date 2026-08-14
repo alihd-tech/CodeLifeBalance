@@ -46,9 +46,9 @@ export function TopReposList({ repos }: TopReposListProps) {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="font-semibold text-foreground">Top Repositories</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">Sorted by stars</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Sorted by stars</p>
         </div>
-        <div className="text-xs text-muted-foreground font-mono">
+        <div className="text-sm text-muted-foreground font-mono">
           {repos.length} total
         </div>
       </div>
@@ -63,7 +63,7 @@ export function TopReposList({ repos }: TopReposListProps) {
             className="group flex items-start gap-3 px-3 py-3 rounded-lg hover:bg-secondary/70 transition-colors"
           >
             {/* Rank */}
-            <div className="w-5 flex-shrink-0 text-xs text-muted-foreground font-mono mt-0.5 text-right">
+            <div className="w-5 flex-shrink-0 text-sm text-muted-foreground font-mono mt-0.5 text-right">
               {i + 1}
             </div>
 
@@ -73,14 +73,14 @@ export function TopReposList({ repos }: TopReposListProps) {
                   {repo.name}
                 </span>
                 {repo.fork && (
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground border border-border flex-shrink-0 font-medium">
+                  <span className="text-[11px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground border border-border flex-shrink-0 font-medium">
                     fork
                   </span>
                 )}
                 <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-auto" />
               </div>
               {repo.description && (
-                <p className="text-xs text-muted-foreground truncate mt-0.5 leading-relaxed">{repo.description}</p>
+                <p className="text-sm text-muted-foreground truncate mt-0.5 leading-relaxed">{repo.description}</p>
               )}
               <div className="flex items-center gap-3 mt-1.5">
                 {repo.language && (
@@ -89,20 +89,20 @@ export function TopReposList({ repos }: TopReposListProps) {
                       className="w-2 h-2 rounded-full flex-shrink-0"
                       style={{ backgroundColor: LANG_DOT[repo.language] ?? "var(--muted-foreground)" }}
                     />
-                    <span className="text-[10px] text-muted-foreground">{repo.language}</span>
+                    <span className="text-xs text-muted-foreground">{repo.language}</span>
                   </div>
                 )}
-                <div className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                <div className="flex items-center gap-0.5 text-xs text-muted-foreground">
                   <Star className="w-3 h-3" />
                   <span>{repo.stargazers_count.toLocaleString()}</span>
                 </div>
                 {repo.forks_count > 0 && (
-                  <div className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                  <div className="flex items-center gap-0.5 text-xs text-muted-foreground">
                     <GitFork className="w-3 h-3" />
                     <span>{repo.forks_count.toLocaleString()}</span>
                   </div>
                 )}
-                <div className="flex items-center gap-0.5 text-[10px] text-muted-foreground ml-auto">
+                <div className="flex items-center gap-0.5 text-xs text-muted-foreground ml-auto">
                   <Calendar className="w-3 h-3" />
                   <span>{timeAgo(repo.updated_at)}</span>
                 </div>

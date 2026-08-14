@@ -78,7 +78,7 @@ export function CommitTimingChart({ commitsByHour, commitsByDay, peakHour, peakD
         <div className="flex items-start justify-between">
           <div>
             <h3 className="font-semibold text-foreground">Hourly Commit Pattern</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-sm text-muted-foreground mt-0.5">
               <span className="inline-flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: "var(--chart-1)" }} />
                 work hours
@@ -96,7 +96,7 @@ export function CommitTimingChart({ commitsByHour, commitsByDay, peakHour, peakD
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-muted-foreground">Peak hour</p>
+            <p className="text-sm text-muted-foreground">Peak hour</p>
             <p className="text-sm font-bold text-foreground font-mono">
               {peakHour === 0 ? "12am" : peakHour < 12 ? `${peakHour}am` : peakHour === 12 ? "12pm" : `${peakHour - 12}pm`}
             </p>
@@ -140,12 +140,12 @@ export function CommitTimingChart({ commitsByHour, commitsByDay, peakHour, peakD
         <div className="flex items-start justify-between">
           <div>
             <h3 className="font-semibold text-foreground">Day of Week Pattern</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Weekends highlighted — orange bars indicate reduced work boundaries
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Weekends highlighted: orange bars indicate reduced work boundaries
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-muted-foreground">Most active</p>
+            <p className="text-sm text-muted-foreground">Most active</p>
             <p className="text-sm font-bold text-foreground">{DAYS_FULL[peakDay]}</p>
           </div>
         </div>
@@ -197,7 +197,7 @@ export function CommitTimingChart({ commitsByHour, commitsByDay, peakHour, peakD
               {timeBlocks.map((tb) => (
                 <div
                   key={tb.label}
-                  className="w-14 text-[9px] text-muted-foreground text-center"
+                  className="w-14 text-[11px] text-muted-foreground text-center"
                 >
                   {tb.label}
                 </div>
@@ -210,7 +210,7 @@ export function CommitTimingChart({ commitsByHour, commitsByDay, peakHour, peakD
               )
               return (
                 <div key={d.day} className="flex gap-0.5 mb-0.5">
-                  <div className="w-8 text-[10px] text-muted-foreground flex items-center">{d.day}</div>
+                  <div className="w-8 text-xs text-muted-foreground flex items-center">{d.day}</div>
                   {timeBlocks.map((tb) => {
                     // Weight by day: scale down by day-of-week relative contribution
                     const blockTotal = tb.hours.reduce((s, h) => s + commitsByHour[h], 0)
@@ -221,7 +221,7 @@ export function CommitTimingChart({ commitsByHour, commitsByDay, peakHour, peakD
                     return (
                       <div
                         key={tb.label}
-                        className="w-14 h-6 rounded flex items-center justify-center text-[9px] font-mono transition-all"
+                        className="w-14 h-6 rounded flex items-center justify-center text-[11px] font-mono transition-all"
                         style={{
                           backgroundColor: `oklch(0.65 0.22 264 / ${opacity})`,
                           color: intensity > 0.6 ? "var(--primary-foreground)" : "var(--muted-foreground)",
@@ -237,7 +237,7 @@ export function CommitTimingChart({ commitsByHour, commitsByDay, peakHour, peakD
             })}
           </div>
         </div>
-        <p className="text-[10px] text-muted-foreground">Estimated commits per time block per day (scaled from aggregate data)</p>
+        <p className="text-xs text-muted-foreground">Estimated commits per time block per day (scaled from aggregate data)</p>
       </div>
     </div>
   )

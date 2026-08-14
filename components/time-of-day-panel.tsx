@@ -189,10 +189,10 @@ export function TimeOfDayPanel({ commitsByHour, timeSessions, peakHour, hourlyPr
       <div className="flex items-start justify-between">
         <div>
           <h3 className="font-semibold text-foreground">Active Hours Deep Dive</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">When you do your best work</p>
+          <p className="text-sm text-muted-foreground mt-0.5">When you do your best work</p>
         </div>
         {dominantSession && (
-          <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border ${SESSION_BG[dominantSession.label] ?? ""} ${SESSION_TEXT[dominantSession.label] ?? ""}`}>
+          <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-semibold border ${SESSION_BG[dominantSession.label] ?? ""} ${SESSION_TEXT[dominantSession.label] ?? ""}`}>
             {(() => {
               const Icon = SESSION_ICONS[dominantSession.label as keyof typeof SESSION_ICONS] ?? Sun
               return <Icon className="w-3.5 h-3.5" />
@@ -206,8 +206,8 @@ export function TimeOfDayPanel({ commitsByHour, timeSessions, peakHour, hourlyPr
         {/* Clock ring */}
         <div className="flex flex-col items-center gap-3">
           <ClockRing commitsByHour={commitsByHour} peakHour={peakHour} />
-          <p className="text-xs text-muted-foreground text-center">
-            24-hour activity ring — each bar = commits that hour
+          <p className="text-sm text-muted-foreground text-center">
+            24-hour activity ring: each bar = commits that hour
           </p>
         </div>
 
@@ -268,7 +268,7 @@ export function TimeOfDayPanel({ commitsByHour, timeSessions, peakHour, hourlyPr
                           style={{ width: `${session.pct}%`, backgroundColor: session.colorVar }}
                         />
                       </div>
-                      <span className="text-[10px] text-muted-foreground tabular-nums w-14 text-right">
+                      <span className="text-xs text-muted-foreground tabular-nums w-14 text-right">
                         {session.hours}
                       </span>
                     </div>
