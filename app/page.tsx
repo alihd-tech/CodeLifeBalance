@@ -35,12 +35,7 @@ export default async function HomePage() {
             <span className="font-bold text-lg tracking-tight text-foreground">
               Code Life Balance
             </span>
-          </div>
-          <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-muted-foreground">
-            <span className="font-mono text-sm">v2.0</span>
-            <span>Features</span>
-            <span>How it works</span>
-          </nav>
+          </div> 
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
             <Link
@@ -66,12 +61,7 @@ export default async function HomePage() {
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[320px] rounded-full bg-primary/8 blur-[100px]" />
           </div>
 
-          <div className="relative flex flex-col items-center text-center">
-            {/* Eyebrow badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/8 text-primary text-sm font-mono font-medium mb-10 tracking-wider uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              GitHub Activity Analyzer
-            </div>
+          <div className="relative flex flex-col items-center text-center"> 
 
             {/* Headline */}
             <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[0.95] text-balance mb-6">

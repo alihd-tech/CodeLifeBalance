@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -6,6 +7,12 @@ import { DashboardClient } from "@/components/dashboard-client"
 import { Activity, ExternalLink, LogOut } from "lucide-react"
 import { GitHubLogoIcon } from "@radix-ui/react-icons"
 import { ThemeToggle } from "@/components/theme-toggle"
+
+// Private, per-user view: useful in the tab title, pointless in an index.
+export const metadata: Metadata = {
+  title: "Dashboard",
+  robots: { index: false, follow: false },
+}
 
 export default async function DashboardPage() {
   const session = await getSession()

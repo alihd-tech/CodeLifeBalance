@@ -10,7 +10,7 @@ const PANEL = "#151f19"
 const BORDER = "#24332b"
 const TEXT = "#e6f0e9"
 const MUTED = "#8ba396"
-const PRIMARY = "#3ecf8e"
+const PRIMARY = "#31b776"
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getSession } from "@/lib/session"
 import { encodeShareCard, tweetText, type ShareCard } from "@/lib/share"
+import { siteConfig } from "@/lib/site"
 
 const clampPct = (n: unknown) => Math.max(0, Math.min(100, Math.round(Number(n) || 0)))
 const clampInt = (n: unknown, max: number) =>
@@ -37,7 +38,9 @@ export async function POST(request: NextRequest) {
   }
 
   const token = encodeShareCard(card)
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || request.nextUrl.origin
+  // Prefer the canonical origin so links shared from a preview deploy
+  // still resolve, and fall back to the request origin in local dev.
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || siteConfig.url || request.nextUrl.origin
   const shareUrl = `${origin}/s/${token}`
   const imageUrl = `${origin}/api/share/image?t=${token}`
 
