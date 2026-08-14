@@ -17,7 +17,6 @@ Built with Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, shadc
 - **Top repositories.** Ranked by stars, with forks and language.
 - **Event breakdown.** Pushes, pull requests, issues, reviews, releases, and more.
 - **Streaks and totals.** Current streak, longest streak, total stars and forks, average commits per day.
-- **Share to X.** Turns a result into a signed public link with a generated 1200x630 card, opens the X composer with prefilled text, and offers the card as a PNG download.
 - **Light and dark themes.** A light, dark, and system toggle in the header, persisted in `localStorage` and applied before first paint so there is no flash.
 
 ## Architecture
@@ -32,9 +31,9 @@ app/
     auth/callback/route.ts    Exchanges the code for a token, stores it in the session
     auth/logout/route.ts      Destroys the session
     analyze/route.ts          Authenticated JSON endpoint returning the full analysis
-    share/route.ts            Mints a signed share token from the current result
-    share/image/route.tsx     Renders the 1200x630 share card as a PNG
-  s/[token]/page.tsx          Public share page carrying the Open Graph tags
+  opengraph-image.tsx         Generated 1200x630 social card
+  robots.ts, sitemap.ts       Crawler directives and sitemap
+  manifest.ts                 Web app manifest
 components/
   dashboard-client.tsx        Client component; fetches /api/analyze with SWR
   *.tsx                       Individual charts and panels
@@ -42,7 +41,7 @@ components/
 lib/
   github.ts                   GitHub API fetching and all analysis logic
   session.ts                  iron-session configuration and types
-  share.ts                    Signed share tokens, card copy, tweet text
+  site.ts                     Canonical URL, authorship and SEO copy
   theme.ts                    Theme storage key and the pre-paint init script
 ```
 
@@ -89,7 +88,7 @@ SESSION_SECRET=a_random_string_of_at_least_32_characters
 | --- | --- | --- |
 | `GITHUB_CLIENT_ID` | Yes | OAuth App client ID. |
 | `GITHUB_CLIENT_SECRET` | Yes | OAuth App client secret. |
-| `NEXT_PUBLIC_SITE_URL` | For sharing | Canonical public origin, for example `https://your-domain.com`. Used to build share links and the Open Graph image URL. Falls back to the request origin. |
+| `NEXT_PUBLIC_SITE_URL` | Optional | Overrides the canonical origin used for metadata, sitemap and social cards. Defaults to `https://coder-life.vercel.app`. |
 | `SESSION_SECRET` | Yes in production | Key used to encrypt the session cookie; must be at least 32 characters. Falls back to a hardcoded development default if unset, so never rely on that fallback outside local development. |
 
 Generate a session secret with:
@@ -125,32 +124,10 @@ The app is a standard Next.js application and deploys to Vercel or any Node.js h
 
 1. Push the repository to GitHub and import it into your hosting provider.
 2. Set `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and `SESSION_SECRET` as environment variables.
-3. Set `NEXT_PUBLIC_SITE_URL` to the deployed origin so share cards resolve.
+3. Set `NEXT_PUBLIC_SITE_URL` if the deployment is not on the canonical domain.
 4. Update the OAuth App's **Authorization callback URL** to `https://your-domain.com/api/auth/callback`.
 
 Security headers (`X-Content-Type-Options`, `Referrer-Policy`, `Strict-Transport-Security`, `Permissions-Policy`) are applied to all routes in [next.config.mjs](next.config.mjs). Note that the same file sets `typescript.ignoreBuildErrors: true`, so type errors will not fail a production build. Run `tsc --noEmit` in CI if you want them enforced.
-
-## Sharing to X
-
-X cannot attach an image through a web intent, so the flow works the way every
-score-card site does it: the tweet carries a link, and X renders the card image
-from that link's Open Graph tags.
-
-1. **Post to X** asks `/api/share` for a signed token built from the numbers on
-   screen, then opens the X composer with prefilled text and the share URL.
-2. X fetches `/s/<token>`, reads its `twitter:card` tags, and shows the PNG from
-   `/api/share/image` as a large summary card.
-3. **Image** downloads that same PNG if you would rather attach it by hand, and
-   **Link** copies the share URL.
-
-Tokens are HMAC-signed with `SESSION_SECRET`, so the image endpoint cannot be
-driven with arbitrary numbers, and the handle on the card always comes from the
-session rather than the request body. A share link is public and unauthenticated
-by design: anyone holding it sees the stats it encodes, and nothing else.
-
-For the card to appear on X, the deployment must be publicly reachable and
-`NEXT_PUBLIC_SITE_URL` must be set to its canonical origin. On localhost the
-buttons work, but X cannot fetch the preview.
 
 ## Theming
 
@@ -168,7 +145,6 @@ muted text about 7.7:1 in light and 8.7:1 in dark, and the primary green clears
 
 - The OAuth flow requests the `read:user` and `repo` scopes. `repo` grants read *and write* access to private repositories. The app only reads, but if you do not need private repository data, narrowing the scope in [app/api/auth/route.ts](app/api/auth/route.ts) is recommended.
 - The access token and profile are stored only in an encrypted, `httpOnly` session cookie that expires after 24 hours. Nothing is persisted server-side and there is no database.
-- Results stay private until you share them. Creating a share link publishes the encoded summary numbers, your handle, display name, and avatar to anyone with that URL.
 - All analysis runs on your own server against the GitHub API, and no activity data is sent to third parties. Vercel Analytics is loaded in production builds only.
 
 ## Tech stack

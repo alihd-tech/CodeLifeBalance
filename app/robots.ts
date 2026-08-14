@@ -8,7 +8,6 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         // Authenticated views and JSON endpoints have nothing to index.
-        // Share pages under /s/ stay crawlable so their cards unfurl.
         disallow: ["/api/", "/dashboard"],
       },
     ],

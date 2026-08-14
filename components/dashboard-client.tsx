@@ -8,7 +8,6 @@ import { StatsOverview } from "@/components/stats-overview"
 import { TopReposList } from "@/components/top-repos-list"
 import { TimeOfDayPanel } from "@/components/time-of-day-panel"
 import { EventBreakdown } from "@/components/event-breakdown"
-import { ShareButton } from "@/components/share-button"
 import { Loader2, AlertCircle, RefreshCcw } from "lucide-react"
 import type { AnalysisData } from "@/lib/github"
 
@@ -65,14 +64,6 @@ export function DashboardClient() {
 
   return (
     <div className="space-y-6">
-      {/* Share row */}
-      <div className="flex items-center justify-between gap-4">
-        <p className="text-sm text-muted-foreground">
-          Your results are private until you share them.
-        </p>
-        <ShareButton data={data} />
-      </div>
-
       {/* Stats overview row */}
       <StatsOverview
         totalCommits={data.totalCommits}
