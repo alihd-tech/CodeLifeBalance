@@ -39,9 +39,25 @@ export interface TimeSession {
   colorVar: string
 }
 
+/** The subset of a GitHub profile the report header needs. */
+export interface PublicProfile {
+  id: number
+  login: string
+  name: string | null
+  avatar_url: string
+  bio: string | null
+  public_repos: number
+  followers: number
+  following: number
+  created_at: string
+  html_url: string
+}
+
 export interface AnalysisData {
   repos: Repo[]
   events: Event[]
+  /** True when the report was built without a signed-in token. */
+  publicOnly: boolean
   languages: Record<string, number>
   commitsByHour: number[]
   commitsByDay: number[]
@@ -76,27 +92,77 @@ export interface AnalysisData {
 
 const BASE = "https://api.github.com"
 
-async function ghFetch<T>(url: string, token: string): Promise<T> {
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-    },
-    next: { revalidate: 300 },
-  })
-  if (!res.ok) throw new Error(`GitHub API error: ${res.status} ${url}`)
+/** Carries the HTTP status so callers can tell 404 from a rate limit. */
+export class GitHubError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly rateLimited = false
+  ) {
+    super(message)
+    this.name = "GitHubError"
+  }
+}
+
+/**
+ * A user token when someone signed in, otherwise the server token if one is
+ * configured, otherwise no credentials at all. Anonymous requests only ever
+ * reach public data, and are capped at 60/hour for the whole server IP.
+ */
+function resolveToken(token?: string | null): string | undefined {
+  return token || process.env.GITHUB_TOKEN || undefined
+}
+
+async function ghFetch<T>(url: string, token?: string | null): Promise<T> {
+  const auth = resolveToken(token)
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+  }
+  if (auth) headers.Authorization = `Bearer ${auth}`
+
+  const res = await fetch(url, { headers, next: { revalidate: 300 } })
+
+  if (!res.ok) {
+    const remaining = res.headers.get("x-ratelimit-remaining")
+    const rateLimited = (res.status === 403 || res.status === 429) && remaining === "0"
+    if (rateLimited) {
+      throw new GitHubError(
+        "GitHub rate limit reached. Try again shortly, or sign in for a higher limit.",
+        res.status,
+        true
+      )
+    }
+    if (res.status === 404) {
+      throw new GitHubError("That GitHub user could not be found.", 404)
+    }
+    throw new GitHubError(`GitHub API error: ${res.status}`, res.status)
+  }
+
   return res.json() as Promise<T>
 }
 
-export async function fetchUserRepos(token: string): Promise<Repo[]> {
+/** Public profile for any username, no authorization required. */
+export async function fetchProfile(
+  username: string,
+  token?: string | null
+): Promise<PublicProfile> {
+  return ghFetch<PublicProfile>(`${BASE}/users/${encodeURIComponent(username)}`, token)
+}
+
+export async function fetchUserRepos(
+  token: string | null | undefined,
+  username: string
+): Promise<Repo[]> {
   const repos: Repo[] = []
   let page = 1
   while (page <= 5) {
-    const batch = await ghFetch<Repo[]>(
-      `${BASE}/user/repos?per_page=100&page=${page}&sort=updated&affiliation=owner`,
-      token
-    )
+    // Signed in as this user we can ask for their own repos, which includes
+    // private ones. Otherwise fall back to the public listing for the handle.
+    const url = token
+      ? `${BASE}/user/repos?per_page=100&page=${page}&sort=updated&affiliation=owner`
+      : `${BASE}/users/${encodeURIComponent(username)}/repos?per_page=100&page=${page}&sort=updated&type=owner`
+    const batch = await ghFetch<Repo[]>(url, token)
     if (!batch.length) break
     repos.push(...batch)
     if (batch.length < 100) break
@@ -105,12 +171,17 @@ export async function fetchUserRepos(token: string): Promise<Repo[]> {
   return repos
 }
 
-export async function fetchUserEvents(token: string, username: string): Promise<Event[]> {
+export async function fetchUserEvents(
+  token: string | null | undefined,
+  username: string
+): Promise<Event[]> {
   const events: Event[] = []
   let page = 1
   while (page <= 3) {
+    // The public timeline is the same feed minus anything from private repos.
+    const path = token ? "events" : "events/public"
     const batch = await ghFetch<Event[]>(
-      `${BASE}/users/${username}/events?per_page=100&page=${page}`,
+      `${BASE}/users/${encodeURIComponent(username)}/${path}?per_page=100&page=${page}`,
       token
     )
     if (!batch.length) break
@@ -136,7 +207,10 @@ function formatHour(h: number): string {
   return `${h - 12}pm`
 }
 
-function computeAnalysis(repos: Repo[], events: Event[]): Omit<AnalysisData, "repos" | "events"> {
+function computeAnalysis(
+  repos: Repo[],
+  events: Event[]
+): Omit<AnalysisData, "repos" | "events" | "publicOnly"> {
   // Language aggregation
   const languages: Record<string, number> = {}
   for (const r of repos) {
@@ -374,11 +448,18 @@ function computeAnalysis(repos: Repo[], events: Event[]): Omit<AnalysisData, "re
   }
 }
 
-export async function analyzeUser(token: string, username: string): Promise<AnalysisData> {
+/**
+ * Builds the full report. Pass a user token to include private activity;
+ * pass null to analyze only what the account exposes publicly.
+ */
+export async function analyzeUser(
+  token: string | null | undefined,
+  username: string
+): Promise<AnalysisData> {
   const [repos, events] = await Promise.all([
-    fetchUserRepos(token),
+    fetchUserRepos(token, username),
     fetchUserEvents(token, username),
   ])
   const analysis = computeAnalysis(repos, events)
-  return { repos, events, ...analysis }
+  return { repos, events, publicOnly: !token, ...analysis }
 }

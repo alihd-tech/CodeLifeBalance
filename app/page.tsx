@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { redirect } from "next/navigation"
 import { getSession } from "@/lib/session"
 import { GitHubLogoIcon } from "@radix-ui/react-icons"
 import {
@@ -15,12 +14,11 @@ import {
   ArrowRight,
 } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { UsernameForm } from "@/components/username-form"
 
 export default async function HomePage() {
   const session = await getSession()
-  if (session.user && session.accessToken) {
-    redirect("/dashboard")
-  }
+  const signedIn = Boolean(session.user && session.accessToken)
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -39,11 +37,11 @@ export default async function HomePage() {
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
             <Link
-              href="/api/auth"
+              href={signedIn ? "/dashboard" : "/api/auth"}
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-card text-sm font-semibold text-foreground hover:border-primary/60 hover:text-primary transition-colors"
             >
               <GitHubLogoIcon className="w-4 h-4" />
-              Sign in
+              {signedIn ? "My dashboard" : "Sign in"}
             </Link>
           </div>
         </div>
@@ -76,18 +74,27 @@ export default async function HomePage() {
 
             {/* Subheading */}
             <p className="text-base md:text-lg text-muted-foreground max-w-lg text-balance leading-relaxed mb-10">
-              Connect your GitHub account for an instant deep-dive into your commit patterns,
-              active hours, language distribution, and a scored work-life balance report.
+              Type any GitHub username for an instant deep-dive into commit patterns, active
+              hours, language distribution, and a scored work-life balance report.
             </p>
 
-            {/* CTA row */}
-            <div className="flex flex-col sm:flex-row items-center gap-3">
+            {/* Primary path: a username, no authorization at all */}
+            <div className="flex flex-col items-center gap-5 w-full">
+              <UsernameForm className="flex flex-col items-center" />
+
+              <div className="flex items-center gap-3 w-full max-w-md">
+                <span className="h-px flex-1 bg-border" />
+                <span className="text-sm text-muted-foreground">or</span>
+                <span className="h-px flex-1 bg-border" />
+              </div>
+
+              {/* Secondary path: sign in to include private activity */}
               <Link
-                href="/api/auth"
-                className="group flex items-center gap-2.5 px-6 py-3 rounded-md bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-all shadow-[0_0_24px_-4px_var(--tw-shadow-color)] shadow-primary/40"
+                href={signedIn ? "/dashboard" : "/api/auth"}
+                className="group flex items-center gap-2.5 px-6 py-3 rounded-lg border border-border bg-card font-semibold text-sm text-foreground hover:border-primary/60 hover:text-primary transition-colors"
               >
                 <GitHubLogoIcon className="w-4 h-4" />
-                Analyze my GitHub
+                {signedIn ? "Open my full report" : "Sign in to include private repos"}
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
               </Link>
               <p className="text-sm text-muted-foreground font-mono">
@@ -285,8 +292,8 @@ export default async function HomePage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
-                { step: "01", title: "Sign in with GitHub", desc: "OAuth read-only login. We request only the minimum scopes needed to analyze your public activity." },
-                { step: "02", title: "We pull your data", desc: "Up to 500 repos and 300 recent events are fetched live from the GitHub REST API in seconds." },
+                { step: "01", title: "Enter a username", desc: "No sign-in and no permissions. Signing in is optional, and only adds private repository activity to your own report." },
+                { step: "02", title: "We pull the data", desc: "Up to 500 repos and 300 recent events are fetched live from the GitHub REST API in seconds." },
                 { step: "03", title: "Review your insights", desc: "An interactive dashboard with 8+ charts, a balance score, and personalized recommendations." },
               ].map(({ step, title, desc }) => (
                 <div key={step} className="flex gap-4">

@@ -8,7 +8,9 @@ import { StatsOverview } from "@/components/stats-overview"
 import { TopReposList } from "@/components/top-repos-list"
 import { TimeOfDayPanel } from "@/components/time-of-day-panel"
 import { EventBreakdown } from "@/components/event-breakdown"
-import { Loader2, AlertCircle, RefreshCcw } from "lucide-react"
+import Link from "next/link"
+import { Loader2, AlertCircle, RefreshCcw, Lock } from "lucide-react"
+import { GitHubLogoIcon } from "@radix-ui/react-icons"
 import type { AnalysisData } from "@/lib/github"
 
 const fetcher = (url: string) =>
@@ -20,8 +22,18 @@ const fetcher = (url: string) =>
     return r.json()
   })
 
-export function DashboardClient() {
-  const { data, error, isLoading, mutate } = useSWR<AnalysisData>("/api/analyze", fetcher, {
+interface DashboardClientProps {
+  /** Set for a public lookup; omit to analyze the signed-in user. */
+  username?: string
+  /** True when this visitor is signed in as the account being shown. */
+  isOwner?: boolean
+}
+
+export function DashboardClient({ username, isOwner = false }: DashboardClientProps) {
+  const endpoint = username
+    ? `/api/analyze?username=${encodeURIComponent(username)}`
+    : "/api/analyze"
+  const { data, error, isLoading, mutate } = useSWR<AnalysisData>(endpoint, fetcher, {
     revalidateOnFocus: false,
     dedupingInterval: 300_000,
   })
@@ -34,7 +46,9 @@ export function DashboardClient() {
           <Loader2 className="w-8 h-8 animate-spin text-primary absolute inset-0 m-auto" />
         </div>
         <div className="text-center space-y-1">
-          <p className="text-sm font-medium text-foreground">Analyzing your GitHub activity...</p>
+          <p className="text-sm font-medium text-foreground">
+            {username ? `Analyzing @${username}...` : "Analyzing your GitHub activity..."}
+          </p>
           <p className="text-sm text-muted-foreground">Fetching repos, events and computing insights</p>
         </div>
       </div>
@@ -64,6 +78,26 @@ export function DashboardClient() {
 
   return (
     <div className="space-y-6">
+      {/* Public-data notice, with the upgrade path for the account owner */}
+      {data.publicOnly && (
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border border-border bg-card">
+          <Lock className="w-4 h-4 text-muted-foreground shrink-0" />
+          <p className="flex-1 text-sm text-muted-foreground">
+            Built from public activity only. Private repositories and their commits are not
+            included.
+          </p>
+          {!isOwner && (
+            <Link
+              href="/api/auth"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-sm font-medium text-foreground hover:border-primary/60 hover:text-primary transition-colors shrink-0"
+            >
+              <GitHubLogoIcon className="w-4 h-4" />
+              Sign in for your full report
+            </Link>
+          )}
+        </div>
+      )}
+
       {/* Stats overview row */}
       <StatsOverview
         totalCommits={data.totalCommits}
