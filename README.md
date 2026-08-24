@@ -2,7 +2,7 @@
 
 > Know when you live to code, and when you don't.
 
-A Next.js web app that signs you in with GitHub, analyzes your recent activity, and turns it into an interactive dashboard: commit timing, active hours, language distribution, top repositories, and a scored work-life balance report with personalized recommendations.
+A Next.js web app that signs you in with GitHub, analyzes your recent activity, and turns it into an interactive dashboard: commit timing, active hours, language distribution, top repositories, and a scored code-life balance report with personalized recommendations.
 
 Built with Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, shadcn/ui, and Recharts.
 

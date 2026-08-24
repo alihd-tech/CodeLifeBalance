@@ -19,3 +19,4 @@ tsconfig.tsbuildinfo
 
 # Local agent settings
 .claude/settings.local.json
+.env

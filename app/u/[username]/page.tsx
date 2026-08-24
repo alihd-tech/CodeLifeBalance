@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params
   return {
     title: `@${username}`,
-    description: `Public GitHub activity report for @${username}: commit timing, active hours, languages and a work-life balance score.`,
+    description: `Public GitHub activity report for @${username}: commit timing, active hours, languages and a code-life balance score.`,
     // One page per handle would be unbounded crawl space.
     robots: { index: false, follow: true },
   }

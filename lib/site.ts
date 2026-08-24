@@ -5,7 +5,7 @@ export const siteConfig = {
   tagline: "GitHub Activity Analyzer",
   title: "Code Life Balance: GitHub Activity Analyzer",
   description:
-    "Analyze your GitHub activity to see when you actually code. Commit timing, active hours, language breakdown, top repos, and a scored work-life balance report with personalized recommendations.",
+    "Analyze your GitHub activity to see when you actually code. Commit timing, active hours, language breakdown, top repos, and a scored code-life balance report with personalized recommendations.",
   /** Canonical production origin. Override locally with NEXT_PUBLIC_SITE_URL. */
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://coder-life.vercel.app",
   locale: "en_US",
@@ -18,7 +18,7 @@ export const siteConfig = {
     "GitHub activity analyzer",
     "GitHub stats",
     "commit patterns",
-    "developer work-life balance",
+    "developer code-life balance",
     "coding habits",
     "commit heatmap",
     "GitHub insights",

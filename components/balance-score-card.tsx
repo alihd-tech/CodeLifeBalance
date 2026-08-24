@@ -163,7 +163,7 @@ export function BalanceScoreCard({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-medium text-muted-foreground">Work-Life Balance</p>
+          <p className="text-sm font-medium text-muted-foreground">code-life Balance</p>
         </div>
         <div className={`px-2.5 py-1 rounded-full text-sm font-semibold border ${bgClass} ${textClass}`}>
           {label}

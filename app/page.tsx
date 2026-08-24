@@ -75,7 +75,7 @@ export default async function HomePage() {
             {/* Subheading */}
             <p className="text-base md:text-lg text-muted-foreground max-w-lg text-balance leading-relaxed mb-10">
               Type any GitHub username for an instant deep-dive into commit patterns, active
-              hours, language distribution, and a scored work-life balance report.
+              hours, language distribution, and a scored code-life balance report.
             </p>
 
             {/* Primary path: a username, no authorization at all */}
@@ -313,17 +313,17 @@ export default async function HomePage() {
         {/* ── Final CTA ── */}
         <section className="max-w-6xl mx-auto px-6 py-24 flex flex-col items-center text-center">
           <p className="font-mono text-sm text-primary uppercase tracking-widest mb-4">
-            Ready?
+            Are you serious?
           </p>
           <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-balance mb-6">
-            See your coding habits<br />in a new light
+            Yes of course<br />here the project github repo to go further
           </h2>
           <Link
-            href="/api/auth"
+            href="https://github.com/alihd-tech/CodeLifeBalance"
             className="group flex items-center gap-2.5 px-7 py-3.5 rounded-md bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition-all shadow-[0_0_32px_-6px_var(--tw-shadow-color)] shadow-primary/50"
           >
             <GitHubLogoIcon className="w-4 h-4" />
-            Get started free
+            Github Repository
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
           </Link>
         </section>
