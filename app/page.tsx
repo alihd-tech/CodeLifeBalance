@@ -1,6 +1,5 @@
 import Link from "next/link"
 import { getSession } from "@/lib/session"
-import { GitHubLogoIcon } from "@radix-ui/react-icons"
 import {
   Activity,
   BarChart3,
