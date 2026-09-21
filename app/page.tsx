@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { getSession } from "@/lib/session"
+import { getOptionalSession, isSessionConfigured } from "@/lib/session"
 import {
   Activity,
   BarChart3,
@@ -16,8 +16,11 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { UsernameForm } from "@/components/username-form"
 
 export default async function HomePage() {
-  const session = await getSession()
-  const signedIn = Boolean(session.user && session.accessToken)
+  const session = await getOptionalSession()
+  const signedIn = Boolean(session?.user && session?.accessToken)
+  const hostedAuthAvailable =
+    isSessionConfigured() &&
+    Boolean(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET)
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -106,12 +109,14 @@ export default async function HomePage() {
 
               <UsernameForm className="flex flex-col items-center" />
 
-              <Link
-                href={signedIn ? "/dashboard" : "/api/auth"}
-                className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-              >
-                {signedIn ? "Open legacy hosted dashboard" : "Legacy hosted sign-in"}
-              </Link>
+              {(signedIn || hostedAuthAvailable) && (
+                <Link
+                  href={signedIn ? "/dashboard" : "/api/auth"}
+                  className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                >
+                  {signedIn ? "Open legacy hosted dashboard" : "Legacy hosted sign-in"}
+                </Link>
+              )}
             </div>
           </div>
 
