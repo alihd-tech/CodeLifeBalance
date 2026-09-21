@@ -62,5 +62,5 @@ outputs:
     description: "Path to the generated Markdown report when enabled."
 
 runs:
-  using: "node20"
+  using: "node24"
   main: "action/index.mjs"
