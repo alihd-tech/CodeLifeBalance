@@ -1,0 +1,54 @@
+name: Publish v1.2.0
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/publish-v1-2-0.yml
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET: 2544633088859df1f41812e08dd9617637877495
+        run: |
+          gh release create v1.2.0 \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$TARGET" \
+            --title "Code Life Balance v1.2.0" \
+            --notes-file - <<'EOF'
+          ## Code Life Balance v1.2.0
+
+          This compatible v1 release adds the standalone npm CLI distribution and fixes direct CLI execution.
+
+          ### Highlights
+          - dependency-free npm CLI artifact for `npx code-life-balance`
+          - CI executes the generated CLI and inspects the npm tarball
+          - tokenless npm trusted-publishing workflow using GitHub OIDC after first-package bootstrap
+          - exact-tag npm publishing so registry releases map to GitHub releases
+          - fixed CLI help parsing during direct execution
+
+          Existing GitHub Action workflows continue using:
+
+          ```yaml
+          uses: alihd-tech/CodeLifeBalance@v1
+          ```
+          EOF
+
+      - name: Move stable v1 alias
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -f v1 2544633088859df1f41812e08dd9617637877495
+          git push origin refs/tags/v1 --force
