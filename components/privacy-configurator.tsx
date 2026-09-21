@@ -1,14 +1,25 @@
 "use client"
 
-import { useMemo, useState, type ComponentType, type ReactNode } from "react"
 import {
+  useMemo,
+  useState,
+  type ComponentType,
+  type ReactNode,
+} from "react"
+import {
+  CalendarClock,
   Check,
+  Clock3,
+  Code2,
   Copy,
+  FileCode2,
+  FolderOutput,
   GitBranch,
   LockKeyhole,
+  Palette,
   ShieldCheck,
-  SlidersHorizontal,
   Terminal,
+  UserRound,
   Workflow,
 } from "lucide-react"
 import {
@@ -37,11 +48,14 @@ const timeZones = [
 ]
 
 const fieldClass =
-  "w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+  "h-9 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground/65 focus:border-primary focus:ring-2 focus:ring-primary/15"
+
+type PreviewMode = "workflow" | "cli"
 
 export function PrivacyConfigurator() {
   const [config, setConfig] = useState<PrivacyConfig>(defaultPrivacyConfig)
-  const [copied, setCopied] = useState<"workflow" | "cli" | null>(null)
+  const [previewMode, setPreviewMode] = useState<PreviewMode>("workflow")
+  const [copied, setCopied] = useState<PreviewMode | null>(null)
 
   const workflow = useMemo(() => generateWorkflow(config), [config])
   const cli = useMemo(() => generateCliCommand(config), [config])
@@ -61,242 +75,377 @@ export function PrivacyConfigurator() {
     })
   }
 
-  const copy = async (kind: "workflow" | "cli", value: string) => {
-    await navigator.clipboard.writeText(value)
+  const copy = async (kind: PreviewMode, value: string) => {
+    try {
+      await navigator.clipboard.writeText(value)
+    } catch {
+      const textarea = document.createElement("textarea")
+      textarea.value = value
+      textarea.style.position = "fixed"
+      textarea.style.opacity = "0"
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand("copy")
+      textarea.remove()
+    }
+
     setCopied(kind)
     window.setTimeout(() => setCopied(null), 1600)
   }
 
+  const currentPreview = previewMode === "workflow" ? workflow : cli
+  const privateMode = config.includePrivate
+  const scheduleLabel =
+    config.schedule === "manual"
+      ? "Manual"
+      : config.schedule.charAt(0).toUpperCase() + config.schedule.slice(1)
+
   return (
-    <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-      <section className="rounded-2xl border border-border bg-card p-5 sm:p-6">
-        <div className="mb-6 flex items-start gap-3">
-          <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
-            <SlidersHorizontal className="h-5 w-5" />
-          </div>
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(420px,1.1fr)] xl:grid-cols-[minmax(0,0.82fr)_minmax(520px,1.18fr)]">
+      <section className="min-w-0 rounded-2xl border border-border/80 bg-card shadow-sm">
+        <div className="flex items-center justify-between gap-3 border-b border-border/70 px-4 py-3.5 sm:px-5">
           <div>
-            <h2 className="text-lg font-bold">Configure your private workflow</h2>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              These settings are used only to generate YAML and a local CLI command in your browser.
+            <h2 className="text-sm font-bold">Report settings</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Changes update the generated setup instantly.
             </p>
           </div>
+          <span className="rounded-full border border-border bg-background px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+            Local only
+          </span>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="GitHub username" hint="Leave empty to use the repository owner.">
-            <input
-              value={config.username}
-              onChange={(event) => update("username", event.target.value)}
-              placeholder="octocat"
-              className={fieldClass}
-            />
-          </Field>
-
-          <Field label="Timezone" hint="Used to classify commit hours correctly.">
-            <input
-              list="code-life-timezones"
-              value={config.timeZone}
-              onChange={(event) => update("timeZone", event.target.value)}
-              className={fieldClass}
-            />
-            <datalist id="code-life-timezones">
-              {timeZones.map((zone) => (
-                <option key={zone} value={zone} />
-              ))}
-            </datalist>
-          </Field>
-
-          <Field label="Workday starts">
-            <select
-              value={config.workdayStartHour}
-              onChange={(event) => {
-                const start = Number(event.target.value)
-                setConfig((current) => ({
-                  ...current,
-                  workdayStartHour: start,
-                  workdayEndHour:
-                    current.workdayEndHour <= start ? Math.min(24, start + 1) : current.workdayEndHour,
-                }))
-              }}
-              className={fieldClass}
-            >
-              {Array.from({ length: 24 }, (_, hour) => (
-                <option key={hour} value={hour}>
-                  {String(hour).padStart(2, "0") + ":00"}
-                </option>
-              ))}
-            </select>
-          </Field>
-
-          <Field label="Workday ends">
-            <select
-              value={config.workdayEndHour}
-              onChange={(event) => update("workdayEndHour", Number(event.target.value))}
-              className={fieldClass}
-            >
-              {Array.from({ length: 24 }, (_, index) => index + 1)
-                .filter((hour) => hour > config.workdayStartHour)
-                .map((hour) => (
-                <option key={hour} value={hour}>
-                  {hour === 24 ? "24:00" : String(hour).padStart(2, "0") + ":00"}
-                </option>
-              ))}
-            </select>
-          </Field>
-
-          <Field label="Card theme">
-            <select
-              value={config.theme}
-              onChange={(event) => update("theme", event.target.value as PrivacyConfig["theme"])}
-              className={fieldClass}
-            >
-              <option value="dark">Dark</option>
-              <option value="light">Light</option>
-            </select>
-          </Field>
-
-          <Field label="Card layout">
-            <select
-              value={config.cardStyle}
-              onChange={(event) =>
-                update("cardStyle", event.target.value as PrivacyConfig["cardStyle"])
-              }
-              className={fieldClass}
-            >
-              <option value="detailed">Detailed</option>
-              <option value="compact">Compact</option>
-            </select>
-          </Field>
-
-          <Field label="Schedule">
-            <select
-              value={config.schedule}
-              onChange={(event) =>
-                update("schedule", event.target.value as PrivacyConfig["schedule"])
-              }
-              className={fieldClass}
-            >
-              <option value="manual">Manual only</option>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-              <option value="custom">Custom cron</option>
-            </select>
-          </Field>
-
-          <Field label="Output directory">
-            <input
-              value={config.outputDir}
-              onChange={(event) => update("outputDir", event.target.value)}
-              className={fieldClass}
-            />
-          </Field>
-
-          {config.schedule === "custom" && (
-            <div className="sm:col-span-2">
-              <Field label="Custom cron" hint="Runs in UTC on GitHub Actions.">
+        <div className="divide-y divide-border/70">
+          <ConfigSection
+            icon={UserRound}
+            title="Identity & time"
+            description="Who to analyze and how activity hours are interpreted."
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="GitHub username" hint="Blank uses the repository owner.">
                 <input
-                  value={config.customCron}
-                  onChange={(event) => update("customCron", event.target.value)}
+                  value={config.username}
+                  onChange={(event) => update("username", event.target.value)}
+                  placeholder="octocat"
                   className={fieldClass}
                 />
               </Field>
+
+              <Field label="Timezone" hint="Any valid IANA timezone works.">
+                <input
+                  list="code-life-timezones"
+                  value={config.timeZone}
+                  onChange={(event) => update("timeZone", event.target.value)}
+                  className={fieldClass}
+                />
+                <datalist id="code-life-timezones">
+                  {timeZones.map((zone) => (
+                    <option key={zone} value={zone} />
+                  ))}
+                </datalist>
+              </Field>
+            </div>
+
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <Field label="Workday starts">
+                <select
+                  value={config.workdayStartHour}
+                  onChange={(event) => {
+                    const start = Number(event.target.value)
+                    setConfig((current) => ({
+                      ...current,
+                      workdayStartHour: start,
+                      workdayEndHour:
+                        current.workdayEndHour <= start
+                          ? Math.min(24, start + 1)
+                          : current.workdayEndHour,
+                    }))
+                  }}
+                  className={fieldClass}
+                >
+                  {Array.from({ length: 24 }, (_, hour) => (
+                    <option key={hour} value={hour}>
+                      {String(hour).padStart(2, "0")}:00
+                    </option>
+                  ))}
+                </select>
+              </Field>
+
+              <Field label="Workday ends">
+                <select
+                  value={config.workdayEndHour}
+                  onChange={(event) => update("workdayEndHour", Number(event.target.value))}
+                  className={fieldClass}
+                >
+                  {Array.from({ length: 24 }, (_, index) => index + 1)
+                    .filter((hour) => hour > config.workdayStartHour)
+                    .map((hour) => (
+                      <option key={hour} value={hour}>
+                        {hour === 24 ? "24:00" : `${String(hour).padStart(2, "0")}:00`}
+                      </option>
+                    ))}
+                </select>
+              </Field>
+            </div>
+          </ConfigSection>
+
+          <ConfigSection
+            icon={Palette}
+            title="Report appearance"
+            description="Keep the generated card aligned with your profile or repository."
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              <ChoiceGroup
+                label="Theme"
+                value={config.theme}
+                options={[
+                  { value: "dark", label: "Dark" },
+                  { value: "light", label: "Light" },
+                ]}
+                onChange={(value) => update("theme", value as PrivacyConfig["theme"])}
+              />
+              <ChoiceGroup
+                label="Layout"
+                value={config.cardStyle}
+                options={[
+                  { value: "detailed", label: "Detailed" },
+                  { value: "compact", label: "Compact" },
+                ]}
+                onChange={(value) =>
+                  update("cardStyle", value as PrivacyConfig["cardStyle"])
+                }
+              />
+            </div>
+          </ConfigSection>
+
+          <ConfigSection
+            icon={FolderOutput}
+            title="Files & delivery"
+            description="Choose what gets generated and where GitHub should keep it."
+          >
+            <Field label="Output directory">
+              <input
+                value={config.outputDir}
+                onChange={(event) => update("outputDir", event.target.value)}
+                placeholder="code-life-balance"
+                className={fieldClass}
+              />
+            </Field>
+
+            <div className="mt-3">
+              <span className="mb-1.5 block text-xs font-semibold">Output formats</span>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  ["svg", "SVG", "Card"],
+                  ["json", "JSON", "Data"],
+                  ["markdown", "MD", "Report"],
+                ] as const).map(([format, shortLabel, caption]) => {
+                  const active = config.formats.includes(format)
+                  return (
+                    <button
+                      key={format}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => toggleFormat(format)}
+                      className={
+                        "rounded-lg border px-2.5 py-2 text-left transition " +
+                        (active
+                          ? "border-primary/60 bg-primary/10 text-primary"
+                          : "border-border bg-background text-muted-foreground hover:border-primary/30 hover:text-foreground")
+                      }
+                    >
+                      <span className="block text-xs font-bold">{shortLabel}</span>
+                      <span className="mt-0.5 block text-[10px] text-current/70">
+                        {caption}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="mt-3 grid gap-2">
+              <CompactToggle
+                checked={config.commit}
+                onChange={(value) => update("commit", value)}
+                title="Commit generated files"
+                description="Otherwise upload the report as a GitHub artifact."
+              />
+              <CompactToggle
+                checked={config.includePrivate}
+                onChange={(value) => update("includePrivate", value)}
+                title="Include private repositories"
+                description="Uses your own CODE_LIFE_TOKEN secret inside GitHub Actions."
+                sensitive
+              />
+            </div>
+          </ConfigSection>
+
+          <ConfigSection
+            icon={CalendarClock}
+            title="Automation"
+            description="Control when GitHub refreshes the generated report."
+          >
+            <ChoiceGroup
+              label="Schedule"
+              value={config.schedule}
+              options={[
+                { value: "manual", label: "Manual" },
+                { value: "daily", label: "Daily" },
+                { value: "weekly", label: "Weekly" },
+                { value: "monthly", label: "Monthly" },
+                { value: "custom", label: "Custom" },
+              ]}
+              onChange={(value) =>
+                update("schedule", value as PrivacyConfig["schedule"])
+              }
+              wrap
+            />
+
+            {config.schedule === "custom" && (
+              <div className="mt-3">
+                <Field label="Custom cron" hint="GitHub Actions schedules run in UTC.">
+                  <input
+                    value={config.customCron}
+                    onChange={(event) => update("customCron", event.target.value)}
+                    placeholder="17 3 * * 1"
+                    className={fieldClass}
+                  />
+                </Field>
+              </div>
+            )}
+          </ConfigSection>
+        </div>
+      </section>
+
+      <aside className="min-w-0 lg:sticky lg:top-[4.5rem] lg:self-start">
+        <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm">
+          <div className="border-b border-border/70 p-3 sm:p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-bold">Generated setup</h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Ready to paste into GitHub or run locally.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => copy(previewMode, currentPreview)}
+                className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 text-xs font-semibold transition hover:border-primary/40 hover:text-primary"
+              >
+                {copied === previewMode ? (
+                  <Check className="h-3.5 w-3.5" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
+                {copied === previewMode ? "Copied" : "Copy"}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-1 rounded-lg border border-border bg-background p-1">
+              <PreviewTab
+                active={previewMode === "workflow"}
+                icon={Workflow}
+                label="GitHub Actions"
+                onClick={() => setPreviewMode("workflow")}
+              />
+              <PreviewTab
+                active={previewMode === "cli"}
+                icon={Terminal}
+                label="Local CLI"
+                onClick={() => setPreviewMode("cli")}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-px border-b border-border/70 bg-border sm:grid-cols-4">
+            <SummaryItem
+              icon={Clock3}
+              label="Hours"
+              value={`${String(config.workdayStartHour).padStart(2, "0")}:00–${config.workdayEndHour === 24 ? "24:00" : `${String(config.workdayEndHour).padStart(2, "0")}:00`}`}
+            />
+            <SummaryItem
+              icon={CalendarClock}
+              label="Schedule"
+              value={scheduleLabel}
+            />
+            <SummaryItem
+              icon={FileCode2}
+              label="Formats"
+              value={config.formats.map((item) => (item === "markdown" ? "MD" : item.toUpperCase())).join(" · ")}
+            />
+            <SummaryItem
+              icon={ShieldCheck}
+              label="Access"
+              value={privateMode ? "Private + public" : "Public"}
+            />
+          </div>
+
+          {privateMode && (
+            <div className="border-b border-primary/20 bg-primary/5 px-3 py-2.5 sm:px-4">
+              <div className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                <LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                <span>
+                  Private mode expects a fine-grained GitHub token stored as{" "}
+                  <code className="font-semibold text-primary">CODE_LIFE_TOKEN</code>.
+                </span>
+              </div>
             </div>
           )}
 
-          <div className="sm:col-span-2">
-            <p className="mb-2 text-sm font-semibold">Output formats</p>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {(["svg", "json", "markdown"] as ReportFormat[]).map((format) => {
-                const active = config.formats.includes(format)
-                return (
-                  <button
-                    key={format}
-                    type="button"
-                    onClick={() => toggleFormat(format)}
-                    className={
-                      "rounded-lg border px-3 py-2.5 text-left text-sm font-medium transition " +
-                      (active
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-background text-muted-foreground hover:text-foreground")
-                    }
-                  >
-                    {format === "svg" ? "SVG card" : format === "json" ? "JSON data" : "Markdown"}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          <div className="grid gap-3 sm:col-span-2">
-            <Toggle
-              checked={config.commit}
-              onChange={(value) => update("commit", value)}
-              title="Commit generated files"
-              description="Write the report back to this repository. Otherwise the workflow uploads it as a GitHub artifact."
-            />
-            <Toggle
-              checked={config.includePrivate}
-              onChange={(value) => update("includePrivate", value)}
-              title="Include private repositories"
-              description="Uses a user-owned CODE_LIFE_TOKEN secret. The secret remains in GitHub Actions and is never sent to CodeLifeBalance."
-              sensitive
-            />
-          </div>
+          <CodePreview
+            mode={previewMode}
+            value={currentPreview}
+          />
         </div>
 
-        {config.includePrivate && (
-          <div className="mt-5 rounded-xl border border-primary/30 bg-primary/5 p-4">
-            <div className="flex gap-3">
-              <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-              <div className="text-sm leading-relaxed text-muted-foreground">
-                <strong className="text-foreground">Private mode:</strong> create a fine-grained
-                GitHub token with only the repositories and read permissions you want, then store it
-                as the repository secret <code className="text-primary">CODE_LIFE_TOKEN</code>.
-              </div>
-            </div>
-          </div>
-        )}
-      </section>
-
-      <section className="space-y-6">
-        <CodePanel
-          icon={Workflow}
-          title="GitHub Actions workflow"
-          subtitle="Save as .github/workflows/code-life-balance.yml"
-          value={workflow}
-          copied={copied === "workflow"}
-          onCopy={() => copy("workflow", workflow)}
-        />
-
-        <CodePanel
-          icon={Terminal}
-          title="Equivalent local command"
-          subtitle="Runs with GITHUB_TOKEN or your existing gh auth session."
-          value={cli}
-          copied={copied === "cli"}
-          onCopy={() => copy("cli", cli)}
-          singleLine
-        />
-
-        <div className="grid gap-3 sm:grid-cols-3">
-          <TrustCard
+        <div className="mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+          <TrustNote
             icon={ShieldCheck}
             title="No provider token"
-            text="The generated workflow does not send credentials to CodeLifeBalance."
+            text="Credentials stay in GitHub Actions or your local shell."
           />
-          <TrustCard
+          <TrustNote
             icon={GitBranch}
-            title="Your artifacts"
-            text="SVG, JSON and Markdown stay in your repository or GitHub artifacts."
+            title="You own outputs"
+            text="Reports stay in your repo or GitHub artifacts."
           />
-          <TrustCard
-            icon={Terminal}
-            title="Local option"
-            text="Run the same analytics engine from your own machine."
+          <TrustNote
+            icon={Code2}
+            title="Portable setup"
+            text="Generated config is plain YAML and CLI arguments."
           />
         </div>
-      </section>
+      </aside>
+    </div>
+  )
+}
+
+function ConfigSection({
+  icon: Icon,
+  title,
+  description,
+  children,
+}: {
+  icon: ComponentType<{ className?: string }>
+  title: string
+  description: string
+  children: ReactNode
+}) {
+  return (
+    <div className="p-4 sm:p-5">
+      <div className="mb-3 flex items-start gap-2.5">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-primary/15 bg-primary/8 text-primary">
+          <Icon className="h-4 w-4" />
+        </span>
+        <div>
+          <h3 className="text-sm font-bold">{title}</h3>
+          <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
+            {description}
+          </p>
+        </div>
+      </div>
+      {children}
     </div>
   )
 }
@@ -312,14 +461,64 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-sm font-semibold">{label}</span>
+      <span className="mb-1.5 block text-xs font-semibold">{label}</span>
       {children}
-      {hint && <span className="mt-1.5 block text-xs text-muted-foreground">{hint}</span>}
+      {hint && (
+        <span className="mt-1 block text-[10px] leading-relaxed text-muted-foreground">
+          {hint}
+        </span>
+      )}
     </label>
   )
 }
 
-function Toggle({
+function ChoiceGroup({
+  label,
+  value,
+  options,
+  onChange,
+  wrap = false,
+}: {
+  label: string
+  value: string
+  options: Array<{ value: string; label: string }>
+  onChange: (value: string) => void
+  wrap?: boolean
+}) {
+  return (
+    <div>
+      <span className="mb-1.5 block text-xs font-semibold">{label}</span>
+      <div
+        className={
+          "flex gap-1 rounded-lg border border-border bg-background p-1 " +
+          (wrap ? "flex-wrap" : "")
+        }
+      >
+        {options.map((option) => {
+          const active = option.value === value
+          return (
+            <button
+              key={option.value}
+              type="button"
+              aria-pressed={active}
+              onClick={() => onChange(option.value)}
+              className={
+                "min-w-0 flex-1 rounded-md px-2.5 py-1.5 text-[11px] font-semibold transition " +
+                (active
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground")
+              }
+            >
+              {option.label}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function CompactToggle({
   checked,
   onChange,
   title,
@@ -335,31 +534,36 @@ function Toggle({
   return (
     <button
       type="button"
+      role="switch"
+      aria-checked={checked}
       onClick={() => onChange(!checked)}
       className={
-        "flex w-full items-start gap-3 rounded-xl border p-4 text-left transition " +
-        (checked ? "border-primary/50 bg-primary/5" : "border-border bg-background")
+        "flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition " +
+        (checked
+          ? "border-primary/45 bg-primary/7"
+          : "border-border bg-background hover:border-primary/25")
       }
     >
       <span
         className={
-          "mt-0.5 flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 transition " +
-          (checked ? "bg-primary" : "bg-muted")
+          "flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 transition " +
+          (checked ? "bg-primary" : "bg-muted-foreground/30")
         }
       >
         <span
           className={
-            "h-4 w-4 rounded-full bg-white transition-transform " +
+            "h-4 w-4 rounded-full bg-white shadow-sm transition-transform " +
             (checked ? "translate-x-4" : "translate-x-0")
           }
         />
       </span>
-      <span>
-        <span className="flex items-center gap-2 text-sm font-semibold">
+
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-1.5 text-xs font-semibold">
           {title}
-          {sensitive && <LockKeyhole className="h-3.5 w-3.5 text-primary" />}
+          {sensitive && <LockKeyhole className="h-3 w-3 text-primary" />}
         </span>
-        <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
+        <span className="mt-0.5 block text-[10px] leading-relaxed text-muted-foreground">
           {description}
         </span>
       </span>
@@ -367,46 +571,80 @@ function Toggle({
   )
 }
 
-function CodePanel({
+function PreviewTab({
+  active,
   icon: Icon,
-  title,
-  subtitle,
-  value,
-  copied,
-  onCopy,
-  singleLine = false,
+  label,
+  onClick,
 }: {
+  active: boolean
   icon: ComponentType<{ className?: string }>
-  title: string
-  subtitle: string
-  value: string
-  copied: boolean
-  onCopy: () => void
-  singleLine?: boolean
+  label: string
+  onClick: () => void
 }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
-      <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-3 sm:px-5">
-        <div className="flex min-w-0 items-center gap-3">
-          <Icon className="h-4 w-4 shrink-0 text-primary" />
-          <div className="min-w-0">
-            <h3 className="text-sm font-bold">{title}</h3>
-            <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={onCopy}
-          className="flex shrink-0 items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold hover:border-primary/50 hover:text-primary"
-        >
-          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-          {copied ? "Copied" : "Copy"}
-        </button>
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={
+        "flex items-center justify-center gap-2 rounded-md px-3 py-2 text-xs font-semibold transition " +
+        (active
+          ? "bg-card text-foreground shadow-sm"
+          : "text-muted-foreground hover:text-foreground")
+      }
+    >
+      <Icon className="h-3.5 w-3.5" />
+      {label}
+    </button>
+  )
+}
+
+function SummaryItem({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: ComponentType<{ className?: string }>
+  label: string
+  value: string
+}) {
+  return (
+    <div className="min-w-0 bg-card px-3 py-2.5">
+      <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+        <Icon className="h-3 w-3" />
+        {label}
+      </div>
+      <p className="mt-1 truncate text-xs font-bold">{value}</p>
+    </div>
+  )
+}
+
+function CodePreview({
+  mode,
+  value,
+}: {
+  mode: PreviewMode
+  value: string
+}) {
+  return (
+    <div className="bg-[oklch(0.075_0.012_155)]">
+      <div className="flex items-center justify-between border-b border-white/8 px-4 py-2">
+        <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/45">
+          {mode === "workflow"
+            ? ".github/workflows/code-life-balance.yml"
+            : "terminal"}
+        </span>
+        <span className="font-mono text-[10px] text-emerald-300/70">
+          {mode === "workflow" ? "YAML" : "Shell"}
+        </span>
       </div>
       <pre
         className={
-          "overflow-x-auto bg-[oklch(0.08_0.01_155)] p-4 text-xs leading-6 text-[oklch(0.86_0.02_150)] sm:p-5 " +
-          (singleLine ? "whitespace-pre" : "max-h-[520px]")
+          "overflow-auto p-4 font-mono text-[11px] leading-5 text-[oklch(0.88_0.02_150)] sm:p-5 " +
+          (mode === "workflow"
+            ? "max-h-[540px] lg:h-[min(57vh,540px)]"
+            : "max-h-[240px] whitespace-pre-wrap break-words")
         }
       >
         <code>{value}</code>
@@ -415,7 +653,7 @@ function CodePanel({
   )
 }
 
-function TrustCard({
+function TrustNote({
   icon: Icon,
   title,
   text,
@@ -425,10 +663,12 @@ function TrustCard({
   text: string
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <Icon className="mb-3 h-4 w-4 text-primary" />
-      <h3 className="text-sm font-bold">{title}</h3>
-      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{text}</p>
+    <div className="rounded-xl border border-border/80 bg-card px-3 py-3">
+      <div className="flex items-center gap-2">
+        <Icon className="h-3.5 w-3.5 text-primary" />
+        <h3 className="text-[11px] font-bold">{title}</h3>
+      </div>
+      <p className="mt-1.5 text-[10px] leading-relaxed text-muted-foreground">{text}</p>
     </div>
   )
 }
