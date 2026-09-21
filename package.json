@@ -15,7 +15,9 @@
     "test:core": "node --test packages/core/index.test.mjs",
     "cli": "node cli/index.mjs",
     "test:report": "node --test packages/report/index.test.mjs",
-    "test": "node --test packages/core/index.test.mjs packages/report/index.test.mjs"
+    "test": "node --test packages/core/index.test.mjs packages/report/index.test.mjs",
+    "typecheck": "tsc --noEmit",
+    "check": "pnpm test && pnpm typecheck && pnpm build"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",

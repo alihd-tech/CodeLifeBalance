@@ -22,6 +22,12 @@ export default function ConfigurePage() {
             Code Life Balance
           </Link>
           <div className="flex items-center gap-2">
+            <Link
+              href="/integrations/github"
+              className="hidden sm:inline-flex rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold hover:border-primary/50 hover:text-primary"
+            >
+              Advanced GitHub App
+            </Link>
             <ThemeToggle />
             <Link
               href="/"

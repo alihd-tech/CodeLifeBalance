@@ -1,0 +1,41 @@
+name: Published v1 smoke test
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 4 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Run published v1 Action
+        uses: alihd-tech/CodeLifeBalance@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ github.repository_owner }}
+          timezone: UTC
+          theme: dark
+          card-style: compact
+          formats: svg,json,markdown
+          output-dir: .tmp/published-v1
+          commit: "false"
+
+      - name: Verify published artifacts
+        run: |
+          test -s .tmp/published-v1/code-life.svg
+          test -s .tmp/published-v1/stats.json
+          test -s .tmp/published-v1/report.md
+
+      - name: Upload smoke artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: published-v1-smoke
+          path: .tmp/published-v1
+          retention-days: 7

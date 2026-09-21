@@ -14,28 +14,46 @@ export interface GitHubUser {
   html_url: string
 }
 
+export interface GitHubAppInstallationSession {
+  id: number
+  accountLogin?: string
+  accountType?: string
+}
+
 export interface SessionData {
   accessToken?: string
   user?: GitHubUser
+  githubAppInstallation?: GitHubAppInstallationSession
+  githubAppOAuthState?: string
 }
 
-const sessionOptions: SessionOptions = {
-  password:
-    process.env.SESSION_SECRET ||
-    "complex-password-at-least-32-characters-long!!",
-  cookieName: "github-analyzer-session",
-  cookieOptions: {
-    secure: process.env.NODE_ENV === "production",
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24, // 24 hours
-  },
+function getSessionPassword() {
+  const configured = process.env.SESSION_SECRET
+  if (configured && configured.length >= 32) return configured
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("SESSION_SECRET must be configured with at least 32 characters in production")
+  }
+
+  return "development-only-session-secret-change-me-32chars"
+}
+
+function getSessionOptions(): SessionOptions {
+  return {
+    password: getSessionPassword(),
+    cookieName: "github-analyzer-session",
+    cookieOptions: {
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24,
+    },
+  }
 }
 
 export async function getSession() {
-  const session = await getIronSession<SessionData>(
+  return getIronSession<SessionData>(
     await cookies(),
-    sessionOptions
+    getSessionOptions()
   )
-  return session
 }

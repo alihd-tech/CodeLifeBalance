@@ -350,9 +350,12 @@ export default async function HomePage() {
             </div>
             <span className="font-bold text-sm text-foreground">Code Life Balance</span>
           </div>
-          <p className="font-mono text-sm text-muted-foreground">
-            GitHub Action &middot; Local CLI &middot; Zero-provider-access mode
-          </p>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+            <span className="font-mono">GitHub Action · Local CLI · Zero-provider-access mode</span>
+            <Link href="/integrations/github" className="hover:text-foreground">GitHub App</Link>
+            <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
+            <Link href="/support" className="hover:text-foreground">Support</Link>
+          </div>
         </div>
       </footer>
 
