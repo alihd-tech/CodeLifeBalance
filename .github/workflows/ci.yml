@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SESSION_SECRET: ci-only-session-secret-with-at-least-32-characters
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Production build
+        run: pnpm build
+
+      - name: Self-test GitHub Action
+        uses: ./
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ github.repository_owner }}
+          timezone: UTC
+          formats: svg,json,markdown
+          output-dir: .tmp/code-life-balance
+          commit: "false"
+
+      - name: Verify Action artifacts
+        run: |
+          test -s .tmp/code-life-balance/code-life.svg
+          test -s .tmp/code-life-balance/stats.json
+          test -s .tmp/code-life-balance/report.md
+          node -e 'const r=require("./.tmp/code-life-balance/stats.json"); if(r.schemaVersion!==1) process.exit(1)'
