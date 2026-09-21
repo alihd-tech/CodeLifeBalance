@@ -109,7 +109,15 @@ export function PrivacyConfigurator() {
           <Field label="Workday starts">
             <select
               value={config.workdayStartHour}
-              onChange={(event) => update("workdayStartHour", Number(event.target.value))}
+              onChange={(event) => {
+                const start = Number(event.target.value)
+                setConfig((current) => ({
+                  ...current,
+                  workdayStartHour: start,
+                  workdayEndHour:
+                    current.workdayEndHour <= start ? Math.min(24, start + 1) : current.workdayEndHour,
+                }))
+              }}
               className={fieldClass}
             >
               {Array.from({ length: 24 }, (_, hour) => (
@@ -126,7 +134,9 @@ export function PrivacyConfigurator() {
               onChange={(event) => update("workdayEndHour", Number(event.target.value))}
               className={fieldClass}
             >
-              {Array.from({ length: 24 }, (_, index) => index + 1).map((hour) => (
+              {Array.from({ length: 24 }, (_, index) => index + 1)
+                .filter((hour) => hour > config.workdayStartHour)
+                .map((hour) => (
                 <option key={hour} value={hour}>
                   {hour === 24 ? "24:00" : String(hour).padStart(2, "0") + ":00"}
                 </option>
