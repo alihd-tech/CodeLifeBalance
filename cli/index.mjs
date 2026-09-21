@@ -32,7 +32,7 @@ Options:
 
 Credentials:
   1. GITHUB_TOKEN environment variable, if set.
-  2. Otherwise `gh auth token`, unless --no-gh is passed.
+  2. Otherwise gh auth token, unless --no-gh is passed.
   3. Public analysis can run without a token when --username is provided.
 
 No credential or report is sent to CodeLifeBalance infrastructure.
