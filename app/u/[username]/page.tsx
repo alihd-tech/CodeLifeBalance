@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import Image from "next/image"
 import { notFound } from "next/navigation"
-import { Activity, ExternalLink } from "lucide-react"
+import { Activity, ExternalLink, ShieldCheck } from "lucide-react"
 import { GitHubLogoIcon } from "@radix-ui/react-icons"
 import { DashboardClient } from "@/components/dashboard-client"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -56,11 +56,11 @@ export default async function PublicReportPage({ params }: Props) {
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
             <Link
-              href={isOwner ? "/dashboard" : "/api/auth"}
+              href={isOwner ? "/dashboard" : "/configure"}
               className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-card text-sm font-semibold text-foreground hover:border-primary/60 hover:text-primary transition-colors"
             >
-              <GitHubLogoIcon className="w-4 h-4" />
-              <span className="hidden sm:inline">{isOwner ? "My dashboard" : "Sign in"}</span>
+              {isOwner ? <GitHubLogoIcon className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
+              <span className="hidden sm:inline">{isOwner ? "My dashboard" : "Private setup"}</span>
             </Link>
           </div>
         </div>
