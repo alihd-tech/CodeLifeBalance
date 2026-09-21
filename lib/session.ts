@@ -24,6 +24,7 @@ export interface SessionData {
   accessToken?: string
   user?: GitHubUser
   githubAppInstallation?: GitHubAppInstallationSession
+  githubAppOAuthState?: string
 }
 
 function getSessionPassword() {
