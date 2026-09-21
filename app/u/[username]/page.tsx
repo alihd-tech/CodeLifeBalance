@@ -7,7 +7,7 @@ import { GitHubLogoIcon } from "@radix-ui/react-icons"
 import { DashboardClient } from "@/components/dashboard-client"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { fetchProfile, GitHubError, type PublicProfile } from "@/lib/github"
-import { getSession } from "@/lib/session"
+import { getOptionalSession } from "@/lib/session"
 
 interface Props {
   params: Promise<{ username: string }>
@@ -39,8 +39,8 @@ export default async function PublicReportPage({ params }: Props) {
   const profile = await loadProfile(username)
   if (!profile) notFound()
 
-  const session = await getSession()
-  const isOwner = session.user?.login.toLowerCase() === profile.login.toLowerCase()
+  const session = await getOptionalSession()
+  const isOwner = session?.user?.login.toLowerCase() === profile.login.toLowerCase()
 
   return (
     <div className="min-h-screen bg-background">
