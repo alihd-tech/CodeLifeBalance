@@ -14,6 +14,7 @@ Built with Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, shadc
 - **Local CLI.** Uses `GITHUB_TOKEN` or an existing `gh auth` session and writes the same artifacts locally.
 - **Workflow configurator.** The `/configure` page generates workflow YAML and the equivalent CLI command entirely in the browser.
 - **Public username viewer.** Public activity remains available without authorization.
+- **Optional GitHub App.** Adds installation-scoped repository access, signed realtime webhooks, organization/team discovery, and opt-in persistent event history.
 - **Legacy hosted OAuth dashboard.** Still available during the migration, but no longer the primary path.
 - **Balance score (0 to 100).** Derived from weekend, after-hours, late-night, and commit-volume patterns, with actionable recommendations.
 - **Commit timing analysis.** Hour-of-day and day-of-week distributions, peak hour and day, plus five named time sessions (Early Bird, Morning, Afternoon, Evening, Night Owl).
@@ -96,6 +97,9 @@ app/
   page.tsx                    Landing page
   dashboard/page.tsx          Legacy hosted authenticated dashboard
   configure/page.tsx          Privacy-first Action and CLI configurator
+  integrations/github/page.tsx Optional GitHub App control center
+  privacy/page.tsx            Product privacy model
+  support/page.tsx            Support and security guidance
   u/[username]/page.tsx       Public username viewer
   layout.tsx                  Fonts, metadata, Vercel Analytics (production only)
   api/
@@ -103,6 +107,7 @@ app/
     auth/callback/route.ts    Exchanges the code for a token, stores it in the session
     auth/logout/route.ts      Destroys the session
     analyze/route.ts          Authenticated JSON endpoint returning the full analysis
+    github-app/*              Optional App install, callback, webhook, status, and history routes
   opengraph-image.tsx         Generated 1200x630 social card
   robots.ts, sitemap.ts       Crawler directives and sitemap
   manifest.ts                 Web app manifest
@@ -112,6 +117,8 @@ components/
   ui/                         shadcn/ui primitives
 lib/
   github.ts                   GitHub API transport; delegates calculations to the shared core
+  github-app.ts               GitHub App JWT, install-token, OAuth verification, and API helpers
+  github-app-history.ts       Opt-in minimal webhook history store
   session.ts                  iron-session configuration and types
   site.ts                     Canonical URL, authorship and SEO copy
   theme.ts                    Theme storage key and the pre-paint init script
@@ -136,7 +143,8 @@ The analytics engine in `packages/core/index.mjs` is provider-agnostic. The GitH
 
 - Node.js 20 or newer
 - [pnpm](https://pnpm.io/) (a `pnpm-lock.yaml` is committed)
-- A GitHub OAuth App
+
+A GitHub OAuth App is required only for the legacy hosted dashboard. A GitHub App is required only for the optional advanced integration. The Action, CLI, configurator, and public viewer do not require either.
 
 ### 1. Clone the repository
 
@@ -144,33 +152,20 @@ The analytics engine in `packages/core/index.mjs` is provider-agnostic. The GitH
 git clone https://github.com/alihd-tech/CodeLifeBalance.git
 ```
 
-### 2. Create a GitHub OAuth App
+### 2. Configure optional hosted features
 
-In GitHub, go to **Settings > Developer settings > OAuth Apps > New OAuth App** and set:
-
-| Field | Value (local development) |
-| --- | --- |
-| Homepage URL | `http://localhost:3000` |
-| Authorization callback URL | `http://localhost:3000/api/auth/callback` |
-
-Copy the generated **Client ID** and **Client Secret**.
-
-### 3. Configure environment variables
-
-Create a `.env.local` file in the project root:
+Copy `.env.example` to `.env.local` and set only the hosted features you need.
 
 ```bash
-GITHUB_CLIENT_ID=your_client_id
-GITHUB_CLIENT_SECRET=your_client_secret
 SESSION_SECRET=a_random_string_of_at_least_32_characters
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-| Variable | Required | Description |
-| --- | --- | --- |
-| `GITHUB_CLIENT_ID` | Yes | OAuth App client ID. |
-| `GITHUB_CLIENT_SECRET` | Yes | OAuth App client secret. |
-| `NEXT_PUBLIC_SITE_URL` | Optional | Overrides the canonical origin used for metadata, sitemap and social cards. Defaults to `https://coder-life.vercel.app`. |
-| `SESSION_SECRET` | Yes in production | Key used to encrypt the session cookie; must be at least 32 characters. Falls back to a hardcoded development default if unset, so never rely on that fallback outside local development. |
+For the legacy OAuth dashboard, additionally configure `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`.
+
+For the optional GitHub App, follow [docs/github-app.md](docs/github-app.md) and configure the App ID, client ID, client secret, private key, webhook secret, and slug.
+
+`SESSION_SECRET` is mandatory for production hosted sessions. Production session creation fails closed when it is missing or too short.
 
 Generate a session secret with:
 
@@ -178,7 +173,7 @@ Generate a session secret with:
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-### 4. Install and run
+### 3. Install and run
 
 ```bash
 pnpm install
@@ -199,6 +194,8 @@ Open [http://localhost:3000](http://localhost:3000) and click **Analyze my GitHu
 | `pnpm start` | Serve the production build. |
 | `pnpm lint` | Run ESLint. |
 | `pnpm test:core` | Run provider-agnostic analytics engine tests. |
+| `pnpm typecheck` | Run strict TypeScript validation. |
+| `pnpm check` | Run tests, typecheck, and production build. |
 | `pnpm cli -- --help` | Show local CLI options. |
 
 ## Deployment
@@ -210,7 +207,7 @@ The app is a standard Next.js application and deploys to Vercel or any Node.js h
 3. Set `NEXT_PUBLIC_SITE_URL` if the deployment is not on the canonical domain.
 4. Update the OAuth App's **Authorization callback URL** to `https://your-domain.com/api/auth/callback`.
 
-Security headers (`X-Content-Type-Options`, `Referrer-Policy`, `Strict-Transport-Security`, `Permissions-Policy`) are applied to all routes in [next.config.mjs](next.config.mjs). Note that the same file sets `typescript.ignoreBuildErrors: true`, so type errors will not fail a production build. Run `tsc --noEmit` in CI if you want them enforced.
+Security headers (`X-Content-Type-Options`, `Referrer-Policy`, `Strict-Transport-Security`, `Permissions-Policy`) are applied to all routes in [next.config.mjs](next.config.mjs). TypeScript errors fail the production build and the permanent CI workflow also runs tests, typecheck, build, and an Action self-test.
 
 ## Theming
 
@@ -233,11 +230,14 @@ Code Life Balance now has distinct trust modes:
 | GitHub Action | GitHub Actions secret/runtime | No | Optional with user-owned fine-grained token |
 | Local CLI | Local environment or `gh auth` | No | Optional |
 | Public viewer | None required | No | No |
+| Optional GitHub App | Short-lived server-side App/user/installation tokens | Hosted App layer only | Yes, installation-scoped |
 | Legacy hosted dashboard | Encrypted browser session cookie | Hosted app handles token | Yes |
 
 The Action runtime calls GitHub's API directly and writes artifacts only into the workflow workspace. The local CLI does the same on the user's machine. The configurator never asks for credentials.
 
-The legacy OAuth flow is retained during migration and still requests the broad `repo` scope. It should not be treated as the preferred privacy-first path and is expected to be reduced or replaced in the later GitHub App phase.
+The optional GitHub App verifies webhook HMAC signatures and verifies installation ownership with a short-lived GitHub App user token before linking an installation. Installation access tokens are created only when needed and are not persisted. Minimal webhook history is opt-in through `GITHUB_APP_HISTORY_PATH`.
+
+The legacy OAuth flow is retained during migration and still requests the broad `repo` scope. It should not be treated as the preferred privacy-first path.
 
 ## Tech stack
 
