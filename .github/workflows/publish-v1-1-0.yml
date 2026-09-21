@@ -1,4 +1,4 @@
-name: Publish v1.1.0
+name: Move v1 to v1.1.0
 
 on:
   push:
@@ -11,38 +11,16 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  move-v1:
     runs-on: ubuntu-latest
     steps:
-      - name: Publish v1.1.0
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TARGET: b0fa26902556ecde56cf8e0aa22b8f0d517b30a1
-        shell: bash
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Move v1 alias
         run: |
-          gh release create v1.1.0 \
-            --repo "$GITHUB_REPOSITORY" \
-            --target "$TARGET" \
-            --title "Code Life Balance v1.1.0" \
-            --notes-file - <<'EOF'
-          ## Code Life Balance v1.1.0
-
-          This compatible v1 release hardens the published Action and adds the optional GitHub App foundation.
-
-          ### Highlights
-          - Node 24 GitHub Action runtime
-          - permanent tests, strict typecheck, production build, and Action self-test CI
-          - recurring published-v1 smoke testing
-          - secure production session-secret handling
-          - optional GitHub App installation verification and short-lived installation tokens
-          - HMAC-verified GitHub App webhooks
-          - installation repository and optional organization/team discovery
-          - opt-in minimal persistent webhook history for self-hosted deployments
-          - privacy, support, security, setup, and changelog documentation
-
-          Existing workflows can continue using:
-
-          ```yaml
-          uses: alihd-tech/CodeLifeBalance@v1
-          ```
-          EOF
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -f v1 b0fa26902556ecde56cf8e0aa22b8f0d517b30a1
+          git push origin refs/tags/v1 --force
