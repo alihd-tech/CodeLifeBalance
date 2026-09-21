@@ -66,6 +66,14 @@ For private owned repositories, create a user-owned fine-grained token with only
 
 ### Local CLI
 
+Once the npm package is published, run without installing:
+
+```bash
+npx code-life-balance --username octocat --timezone Europe/Helsinki
+```
+
+For repository development, or before the npm package is published, use `pnpm cli --`.
+
 Authenticate with GitHub CLI:
 
 ```bash
@@ -197,6 +205,8 @@ Open [http://localhost:3000](http://localhost:3000) and click **Analyze my GitHu
 | `pnpm typecheck` | Run strict TypeScript validation. |
 | `pnpm check` | Run tests, typecheck, and production build. |
 | `pnpm cli -- --help` | Show local CLI options. |
+| `pnpm build:npm-cli` | Build the dependency-free npm CLI package into `dist/npm`. |
+| `pnpm test:npm-cli` | Build, execute, and dry-run-pack the npm CLI artifact. |
 
 ## Deployment
 
