@@ -2,10 +2,10 @@
 export const siteConfig = {
   name: "Code Life Balance",
   shortName: "Code Life",
-  tagline: "GitHub Activity Analyzer",
-  title: "Code Life Balance: GitHub Activity Analyzer",
+  tagline: "Privacy-First GitHub Activity Analyzer",
+  title: "Code Life Balance: Privacy-First GitHub Activity Analyzer",
   description:
-    "Analyze your GitHub activity to see when you actually code. Commit timing, active hours, language breakdown, top repos, and a scored code-life balance report with personalized recommendations.",
+    "Generate GitHub activity, coding-rhythm, and code-life balance reports with a GitHub Action, local CLI, or public viewer. Private-first modes keep credentials out of CodeLifeBalance infrastructure.",
   /** Canonical production origin. Override locally with NEXT_PUBLIC_SITE_URL. */
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://coder-life.vercel.app",
   locale: "en_US",
