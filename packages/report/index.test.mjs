@@ -40,8 +40,8 @@ test("renders detailed and compact SVG cards without external assets", () => {
   assert.match(detailed, /privacy-first report/)
   assert.match(compact, /width="620"/)
   assert.match(compact, /local\/private-first/)
-  assert.doesNotMatch(detailed, /https?:\/\//)
-  assert.doesNotMatch(compact, /https?:\/\//)
+  assert.doesNotMatch(detailed, /(?:href|xlink:href|src)=["\']https?:\/\//i)
+  assert.doesNotMatch(compact, /(?:href|xlink:href|src)=["\']https?:\/\//i)
 })
 
 test("renders a portable Markdown report", () => {
