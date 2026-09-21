@@ -72,7 +72,7 @@ Once the npm package is published, run without installing:
 npx code-life-balance --username octocat --timezone Europe/Helsinki
 ```
 
-For repository development, or before the npm package is published, use `pnpm cli --`.
+Until the npm registry package is published, the web configurator uses the dependency-free CLI tarball attached to the stable GitHub release so its generated local command can run without cloning this repository. Repository contributors can still use `pnpm cli --`.
 
 Authenticate with GitHub CLI:
 
@@ -80,23 +80,23 @@ Authenticate with GitHub CLI:
 gh auth login
 ```
 
-Then run:
+Then run the current stable CLI release directly:
 
 ```bash
-pnpm cli -- --username octocat --timezone Europe/Helsinki
+npx --yes https://github.com/alihd-tech/CodeLifeBalance/releases/download/v1.2.0/code-life-balance-1.2.0.tgz --username octocat --timezone Europe/Helsinki
 ```
 
 Private mode stays on the local machine:
 
 ```bash
-pnpm cli -- --include-private --timezone Europe/Helsinki
+npx --yes https://github.com/alihd-tech/CodeLifeBalance/releases/download/v1.2.0/code-life-balance-1.2.0.tgz --include-private --timezone Europe/Helsinki
 ```
 
 The CLI prefers `GITHUB_TOKEN`, then `gh auth token`. Public analysis can run without credentials when a username is supplied.
 
 ### Web configurator
 
-Open `/configure` in the web app to choose timezone, work hours, theme, card style, output formats, schedule, and private/public mode. The page only generates configuration and does not request a GitHub token.
+Open `/configure` in the web app to choose timezone, work hours, theme, card style, output formats, and private/public mode. The generated GitHub Actions workflow is manual (`workflow_dispatch`) and the page does not request a GitHub token.
 
 ## Architecture
 
