@@ -20,7 +20,7 @@ await cp(resolve(root, "docs/npm-cli-readme.md"), resolve(out, "README.md"))
 
 const packageJson = {
   name: "code-life-balance",
-  version: rootPackage.version,
+  version: process.env.CLI_PACKAGE_VERSION || rootPackage.version,
   description: "Privacy-first GitHub activity and code-life balance reports from your local machine.",
   type: "module",
   bin: {
