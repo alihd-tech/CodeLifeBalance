@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   Users,
 } from "lucide-react"
-import { getSession } from "@/lib/session"
+import { getOptionalSession, isSessionConfigured } from "@/lib/session"
 import {
   getGitHubAppInstallation,
   isGitHubAppConfigured,
@@ -35,9 +35,9 @@ export default async function GitHubIntegrationPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const params = await searchParams
-  const session = await getSession()
-  const configured = isGitHubAppConfigured()
-  const linked = session.githubAppInstallation
+  const session = await getOptionalSession()
+  const configured = isGitHubAppConfigured() && isSessionConfigured()
+  const linked = session?.githubAppInstallation
 
   let installation: Awaited<ReturnType<typeof getGitHubAppInstallation>> | null = null
   let repositories: Awaited<ReturnType<typeof listInstallationRepositories>> = []

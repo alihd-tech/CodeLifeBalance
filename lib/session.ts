@@ -27,6 +27,11 @@ export interface SessionData {
   githubAppOAuthState?: string
 }
 
+export function isSessionConfigured() {
+  const configured = process.env.SESSION_SECRET
+  return process.env.NODE_ENV !== "production" || Boolean(configured && configured.length >= 32)
+}
+
 function getSessionPassword() {
   const configured = process.env.SESSION_SECRET
   if (configured && configured.length >= 32) return configured
@@ -56,4 +61,9 @@ export async function getSession() {
     await cookies(),
     getSessionOptions()
   )
+}
+
+export async function getOptionalSession() {
+  if (!isSessionConfigured()) return null
+  return getSession()
 }
