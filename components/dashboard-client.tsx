@@ -12,14 +12,30 @@ import Link from "next/link"
 import { Loader2, AlertCircle, RefreshCcw, Lock, ShieldCheck } from "lucide-react"
 import type { AnalysisData } from "@/lib/github"
 
-const fetcher = (url: string) =>
-  fetch(url).then(async (r) => {
-    if (!r.ok) {
-      const err = await r.json().catch(() => ({ error: "Unknown error" }))
-      throw new Error(err.error ?? "Failed to fetch")
+const fetcher = async (url: string) => {
+  const response = await fetch(url)
+  const contentType = response.headers.get("content-type") ?? ""
+
+  if (!response.ok) {
+    if (contentType.includes("application/json")) {
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string }
+        | null
+      throw new Error(
+        payload?.error || `GitHub analysis request failed (${response.status}).`
+      )
     }
-    return r.json()
-  })
+
+    const text = await response.text().catch(() => "")
+    throw new Error(
+      text.trim()
+        ? `GitHub analysis request failed (${response.status}): ${text.slice(0, 160)}`
+        : `GitHub analysis request failed (${response.status}).`
+    )
+  }
+
+  return response.json()
+}
 
 interface DashboardClientProps {
   /** Set for a public lookup; omit to analyze the signed-in user. */
