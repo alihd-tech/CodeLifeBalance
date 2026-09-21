@@ -1,0 +1,40 @@
+name: Maintain stable v1 tag
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: write
+
+jobs:
+  update-v1:
+    if: ${{ !github.event.release.prerelease && startsWith(github.event.release.tag_name, 'v1.') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          fetch-depth: 0
+
+      - name: Validate semantic v1 tag
+        id: version
+        shell: bash
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          if [[ "$TAG" =~ ^v1\.[0-9]+\.[0-9]+$ ]]; then
+            echo "valid=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "valid=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Move stable v1 alias
+        if: steps.version.outputs.valid == 'true'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -f v1 "${{ github.event.release.tag_name }}"
+          git push origin refs/tags/v1 --force
