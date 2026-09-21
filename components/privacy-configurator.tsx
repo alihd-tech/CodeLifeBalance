@@ -7,7 +7,6 @@ import {
   type ReactNode,
 } from "react"
 import {
-  CalendarClock,
   Check,
   Clock3,
   Code2,
@@ -95,10 +94,6 @@ export function PrivacyConfigurator() {
 
   const currentPreview = previewMode === "workflow" ? workflow : cli
   const privateMode = config.includePrivate
-  const scheduleLabel =
-    config.schedule === "manual"
-      ? "Manual"
-      : config.schedule.charAt(0).toUpperCase() + config.schedule.slice(1)
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(420px,1.1fr)] xl:grid-cols-[minmax(0,0.82fr)_minmax(520px,1.18fr)]">
@@ -281,40 +276,6 @@ export function PrivacyConfigurator() {
             </div>
           </ConfigSection>
 
-          <ConfigSection
-            icon={CalendarClock}
-            title="Automation"
-            description="Control when GitHub refreshes the generated report."
-          >
-            <ChoiceGroup
-              label="Schedule"
-              value={config.schedule}
-              options={[
-                { value: "manual", label: "Manual" },
-                { value: "daily", label: "Daily" },
-                { value: "weekly", label: "Weekly" },
-                { value: "monthly", label: "Monthly" },
-                { value: "custom", label: "Custom" },
-              ]}
-              onChange={(value) =>
-                update("schedule", value as PrivacyConfig["schedule"])
-              }
-              wrap
-            />
-
-            {config.schedule === "custom" && (
-              <div className="mt-3">
-                <Field label="Custom cron" hint="GitHub Actions schedules run in UTC.">
-                  <input
-                    value={config.customCron}
-                    onChange={(event) => update("customCron", event.target.value)}
-                    placeholder="17 3 * * 1"
-                    className={fieldClass}
-                  />
-                </Field>
-              </div>
-            )}
-          </ConfigSection>
         </div>
       </section>
 
@@ -358,16 +319,11 @@ export function PrivacyConfigurator() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-px border-b border-border/70 bg-border sm:grid-cols-4">
+          <div className="grid grid-cols-3 gap-px border-b border-border/70 bg-border">
             <SummaryItem
               icon={Clock3}
               label="Hours"
               value={`${String(config.workdayStartHour).padStart(2, "0")}:00–${config.workdayEndHour === 24 ? "24:00" : `${String(config.workdayEndHour).padStart(2, "0")}:00`}`}
-            />
-            <SummaryItem
-              icon={CalendarClock}
-              label="Schedule"
-              value={scheduleLabel}
             />
             <SummaryItem
               icon={FileCode2}
@@ -386,8 +342,19 @@ export function PrivacyConfigurator() {
               <div className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
                 <LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
                 <span>
-                  Private mode expects a fine-grained GitHub token stored as{" "}
-                  <code className="font-semibold text-primary">CODE_LIFE_TOKEN</code>.
+                  {previewMode === "workflow" ? (
+                    <>
+                      Private mode expects a fine-grained GitHub token stored as{" "}
+                      <code className="font-semibold text-primary">CODE_LIFE_TOKEN</code>.
+                    </>
+                  ) : (
+                    <>
+                      Private CLI mode uses{" "}
+                      <code className="font-semibold text-primary">GITHUB_TOKEN</code> or your
+                      existing <code className="font-semibold text-primary">gh auth login</code>{" "}
+                      session.
+                    </>
+                  )}
                 </span>
               </div>
             </div>
@@ -413,7 +380,7 @@ export function PrivacyConfigurator() {
           <TrustNote
             icon={Code2}
             title="Portable setup"
-            text="Generated config is plain YAML and CLI arguments."
+            text="Generated config is plain YAML and a directly runnable CLI command."
           />
         </div>
       </aside>
