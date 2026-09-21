@@ -6,6 +6,17 @@ All notable Code Life Balance releases are documented here.
 
 _No changes yet._
 
+## 1.2.0 - 2026-09-21
+
+### Added
+- Standalone dependency-free npm CLI distribution generated from the shared runtime.
+- CI validation that executes the generated CLI and inspects the npm tarball with `npm pack --dry-run`.
+- GitHub OIDC trusted-publishing workflow for tokenless npm releases after the initial npm package bootstrap.
+- npm publishing and CLI-specific documentation.
+
+### Fixed
+- CLI help output now parses correctly when executed directly or from the generated npm package.
+
 ## 1.1.0 - 2026-09-21
 
 ### Added
