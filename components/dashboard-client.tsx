@@ -9,8 +9,7 @@ import { TopReposList } from "@/components/top-repos-list"
 import { TimeOfDayPanel } from "@/components/time-of-day-panel"
 import { EventBreakdown } from "@/components/event-breakdown"
 import Link from "next/link"
-import { Loader2, AlertCircle, RefreshCcw, Lock } from "lucide-react"
-import { GitHubLogoIcon } from "@radix-ui/react-icons"
+import { Loader2, AlertCircle, RefreshCcw, Lock, ShieldCheck } from "lucide-react"
 import type { AnalysisData } from "@/lib/github"
 
 const fetcher = (url: string) =>
@@ -88,11 +87,11 @@ export function DashboardClient({ username, isOwner = false }: DashboardClientPr
           </p>
           {!isOwner && (
             <Link
-              href="/api/auth"
+              href="/configure"
               className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-sm font-medium text-foreground hover:border-primary/60 hover:text-primary transition-colors shrink-0"
             >
-              <GitHubLogoIcon className="w-4 h-4" />
-              Sign in for your full report
+              <ShieldCheck className="w-4 h-4" />
+              Build your private report
             </Link>
           )}
         </div>
