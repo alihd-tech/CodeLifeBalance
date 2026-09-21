@@ -42,19 +42,40 @@ export async function fetchUserSnapshot({
   userAgent,
 }) {
   if (!username) throw new Error("username is required")
+  if (includePrivate && !token) {
+    throw new Error("includePrivate requires an authenticated GitHub token")
+  }
 
   const options = { apiUrl, userAgent }
 
+  let profile
+  let effectiveUsername = username
+
+  if (includePrivate) {
+    profile = await githubFetch("/user", token, options)
+    if (profile.login.toLowerCase() !== username.toLowerCase()) {
+      throw new Error(
+        `Private mode token belongs to @${profile.login}, not @${username}. Use the token owner's username.`
+      )
+    }
+    effectiveUsername = profile.login
+  } else {
+    profile = await githubFetch(
+      `/users/${encodeURIComponent(username)}`,
+      token,
+      options
+    )
+  }
+
   const repoPath = includePrivate
     ? (page) => `/user/repos?per_page=100&page=${page}&sort=updated&affiliation=owner`
-    : (page) => `/users/${encodeURIComponent(username)}/repos?per_page=100&page=${page}&sort=updated&type=owner`
+    : (page) => `/users/${encodeURIComponent(effectiveUsername)}/repos?per_page=100&page=${page}&sort=updated&type=owner`
 
   const eventPath = includePrivate
-    ? (page) => `/users/${encodeURIComponent(username)}/events?per_page=100&page=${page}`
-    : (page) => `/users/${encodeURIComponent(username)}/events/public?per_page=100&page=${page}`
+    ? (page) => `/users/${encodeURIComponent(effectiveUsername)}/events?per_page=100&page=${page}`
+    : (page) => `/users/${encodeURIComponent(effectiveUsername)}/events/public?per_page=100&page=${page}`
 
-  const [profile, repos, events] = await Promise.all([
-    githubFetch(`/users/${encodeURIComponent(username)}`, token, options),
+  const [repos, events] = await Promise.all([
     fetchPages(repoPath, token, 5, options),
     fetchPages(eventPath, token, 3, options),
   ])
