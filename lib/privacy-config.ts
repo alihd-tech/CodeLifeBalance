@@ -99,7 +99,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Generate Code Life Balance report
-        uses: alihd-tech/CodeLifeBalance@v1
+        uses: alihd-tech/CodeLifeBalance@main
         with:
           github-token: ${token}
           username: ${quoted(username)}
