@@ -1,6 +1,6 @@
 {
   "name": "code-life-balance",
-  "version": "0.1.0",
+  "version": "1.2.0",
   "private": true,
   "license": "MIT",
   "repository": {
@@ -17,7 +17,9 @@
     "test:report": "node --test packages/report/index.test.mjs",
     "test": "node --test packages/core/index.test.mjs packages/report/index.test.mjs",
     "typecheck": "tsc --noEmit",
-    "check": "pnpm test && pnpm typecheck && pnpm build"
+    "check": "pnpm test && pnpm typecheck && pnpm build && pnpm test:npm-cli",
+    "build:npm-cli": "node scripts/build-npm-cli.mjs",
+    "test:npm-cli": "pnpm build:npm-cli && node dist/npm/cli/index.mjs --help && npm pack --dry-run ./dist/npm"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",

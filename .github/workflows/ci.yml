@@ -44,6 +44,9 @@ jobs:
       - name: Production build
         run: pnpm build
 
+      - name: Build and inspect npm CLI package
+        run: pnpm test:npm-cli
+
       - name: Self-test GitHub Action
         uses: ./
         with:
