@@ -1,0 +1,97 @@
+name: Update Marketplace release copy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/update-marketplace-release.yml
+
+permissions:
+  contents: write
+
+jobs:
+  update-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update v1.2.0 release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          cat > release-notes.md <<'EOF'
+# Code Life Balance v1.2.0
+
+Code Life Balance is a privacy-first GitHub Action for generating activity, coding-rhythm, and code-life balance reports directly inside your own GitHub Actions runner.
+
+Your GitHub token and private activity do not need to be sent to a Code Life Balance backend.
+
+## Marketplace highlights
+
+- Runs entirely inside GitHub Actions
+- No Code Life Balance account required
+- No Code Life Balance API required
+- Public GitHub activity analysis
+- Optional private repository analysis with your own fine-grained GitHub token
+- Timezone-aware commit timing
+- Configurable workday hours
+- Code-life balance score
+- Weekend, after-hours, and late-night activity metrics
+- Current and longest streaks
+- Language and repository statistics
+- Dark and light report themes
+- Detailed and compact SVG cards
+
+## Generated outputs
+
+- `code-life.svg` for GitHub profiles and READMEs
+- `stats.json` for integrations and custom dashboards
+- `report.md` for human-readable reports
+
+## Basic usage
+
+```yaml
+- uses: alihd-tech/CodeLifeBalance@v1
+  with:
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+    username: ${{ github.repository_owner }}
+    timezone: UTC
+    formats: svg,json,markdown
+    commit: "false"
+```
+
+## Private repository mode
+
+Private analysis is optional. Store your own fine-grained GitHub token in a repository secret such as `CODE_LIFE_TOKEN`, then use:
+
+```yaml
+- uses: alihd-tech/CodeLifeBalance@v1
+  with:
+    github-token: ${{ secrets.CODE_LIFE_TOKEN }}
+    include-private: "true"
+```
+
+The token remains inside your GitHub Actions environment and is used directly against the GitHub API.
+
+## Stable release alias
+
+Use `alihd-tech/CodeLifeBalance@v1` for the current compatible v1 release. The exact immutable release is `v1.2.0`.
+
+## Also included
+
+- Local CLI distribution
+- Browser-based workflow configurator
+- Public username viewer
+- Optional GitHub App foundation
+- CI, typecheck, build, and published Action smoke tests
+
+## License
+
+MIT
+EOF
+
+          gh release edit v1.2.0 \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Code Life Balance v1.2.0" \
+            --notes-file release-notes.md \
+            --latest
