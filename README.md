@@ -47,7 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: alihd-tech/CodeLifeBalance@main
+      - uses: alihd-tech/CodeLifeBalance@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           username: ${{ github.repository_owner }}
