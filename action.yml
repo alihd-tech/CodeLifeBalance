@@ -14,12 +14,36 @@ inputs:
     description: "GitHub username to analyze. Defaults to the workflow actor."
     required: false
     default: ""
+  include-private:
+    description: "Use authenticated owned repositories/events. Requires a user-owned token with appropriate read access."
+    required: false
+    default: "false"
   timezone:
     description: "IANA timezone used for commit timing, for example Europe/Helsinki."
     required: false
     default: "UTC"
+  workday-start:
+    description: "Configured workday start hour, 0-23."
+    required: false
+    default: "9"
+  workday-end:
+    description: "Configured workday end hour, 1-24."
+    required: false
+    default: "18"
+  theme:
+    description: "Generated SVG theme: dark or light."
+    required: false
+    default: "dark"
+  card-style:
+    description: "Generated SVG layout: detailed or compact."
+    required: false
+    default: "detailed"
+  formats:
+    description: "Comma-separated artifact formats: svg,json,markdown."
+    required: false
+    default: "svg,json,markdown"
   output-dir:
-    description: "Directory where generated SVG, JSON, and Markdown files are written."
+    description: "Directory where generated artifacts are written."
     required: false
     default: "code-life-balance"
   commit:
@@ -31,11 +55,11 @@ outputs:
   score:
     description: "Computed code-life balance score."
   svg-path:
-    description: "Path to the generated SVG card."
+    description: "Path to the generated SVG card when enabled."
   json-path:
-    description: "Path to the generated JSON report."
+    description: "Path to the generated JSON report when enabled."
   markdown-path:
-    description: "Path to the generated Markdown report."
+    description: "Path to the generated Markdown report when enabled."
 
 runs:
   using: "node20"

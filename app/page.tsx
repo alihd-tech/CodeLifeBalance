@@ -1,6 +1,5 @@
 import Link from "next/link"
 import { getSession } from "@/lib/session"
-import { GitHubLogoIcon } from "@radix-ui/react-icons"
 import {
   Activity,
   BarChart3,
@@ -36,12 +35,20 @@ export default async function HomePage() {
           </div> 
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
+            {signedIn && (
+              <Link
+                href="/dashboard"
+                className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-muted-foreground hover:text-foreground"
+              >
+                My dashboard
+              </Link>
+            )}
             <Link
-              href={signedIn ? "/dashboard" : "/api/auth"}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-card text-sm font-semibold text-foreground hover:border-primary/60 hover:text-primary transition-colors"
+              href="/configure"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-opacity"
             >
-              <GitHubLogoIcon className="w-4 h-4" />
-              {signedIn ? "My dashboard" : "Sign in"}
+              <Shield className="w-4 h-4" />
+              Configure
             </Link>
           </div>
         </div>
@@ -74,32 +81,37 @@ export default async function HomePage() {
 
             {/* Subheading */}
             <p className="text-base md:text-lg text-muted-foreground max-w-lg text-balance leading-relaxed mb-10">
-              Type any GitHub username for an instant deep-dive into commit patterns, active
-              hours, language distribution, and a scored code-life balance report.
+              Generate GitHub activity reports without giving Code Life Balance your token.
+              Run the analysis inside your own GitHub Actions runner or locally on your machine.
             </p>
 
-            {/* Primary path: a username, no authorization at all */}
             <div className="flex flex-col items-center gap-5 w-full">
-              <UsernameForm className="flex flex-col items-center" />
-
-              <div className="flex items-center gap-3 w-full max-w-md">
-                <span className="h-px flex-1 bg-border" />
-                <span className="text-sm text-muted-foreground">or</span>
-                <span className="h-px flex-1 bg-border" />
-              </div>
-
-              {/* Secondary path: sign in to include private activity */}
               <Link
-                href={signedIn ? "/dashboard" : "/api/auth"}
-                className="group flex items-center gap-2.5 px-6 py-3 rounded-lg border border-border bg-card font-semibold text-sm text-foreground hover:border-primary/60 hover:text-primary transition-colors"
+                href="/configure"
+                className="group flex items-center gap-2.5 px-7 py-3.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity"
               >
-                <GitHubLogoIcon className="w-4 h-4" />
-                {signedIn ? "Open my full report" : "Sign in to include private repos"}
+                <Shield className="w-4 h-4" />
+                Build my private workflow
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
               </Link>
               <p className="text-sm text-muted-foreground font-mono">
-                read-only &middot; no data stored
+                no provider token &middot; no hosted account required
               </p>
+
+              <div className="flex items-center gap-3 w-full max-w-md">
+                <span className="h-px flex-1 bg-border" />
+                <span className="text-sm text-muted-foreground">or preview public activity</span>
+                <span className="h-px flex-1 bg-border" />
+              </div>
+
+              <UsernameForm className="flex flex-col items-center" />
+
+              <Link
+                href={signedIn ? "/dashboard" : "/api/auth"}
+                className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              >
+                {signedIn ? "Open legacy hosted dashboard" : "Legacy hosted sign-in"}
+              </Link>
             </div>
           </div>
 
@@ -246,7 +258,7 @@ export default async function HomePage() {
               {
                 icon: Shield,
                 title: "Private & Secure",
-                desc: "Data is fetched live and never stored. Your token lives only in an encrypted session cookie.",
+                desc: "The recommended Action and CLI modes keep your token inside GitHub or on your own machine.",
                 tag: "security",
               },
               {
@@ -292,9 +304,9 @@ export default async function HomePage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
-                { step: "01", title: "Enter a username", desc: "No sign-in and no permissions. Signing in is optional, and only adds private repository activity to your own report." },
-                { step: "02", title: "We pull the data", desc: "Up to 500 repos and 300 recent events are fetched live from the GitHub REST API in seconds." },
-                { step: "03", title: "Review your insights", desc: "An interactive dashboard with 8+ charts, a balance score, and personalized recommendations." },
+                { step: "01", title: "Configure your report", desc: "Choose timezone, work hours, card style, output formats, and schedule in the browser." },
+                { step: "02", title: "Run it where you trust", desc: "Use GitHub Actions or the local CLI. Credentials stay in that environment and only GitHub API requests are made." },
+                { step: "03", title: "Own the output", desc: "Generate SVG, JSON, and Markdown in your repository, then embed the card in your GitHub profile." },
               ].map(({ step, title, desc }) => (
                 <div key={step} className="flex gap-4">
                   <span className="font-mono text-4xl font-extrabold text-primary/20 leading-none shrink-0 select-none">
@@ -313,17 +325,17 @@ export default async function HomePage() {
         {/* ── Final CTA ── */}
         <section className="max-w-6xl mx-auto px-6 py-24 flex flex-col items-center text-center">
           <p className="font-mono text-sm text-primary uppercase tracking-widest mb-4">
-            Are you serious?
+            Privacy-first by default
           </p>
           <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-balance mb-6">
-            Yes of course<br />here the project github repo to go further
+            Generate the workflow<br />and keep control of your data
           </h2>
           <Link
-            href="https://github.com/alihd-tech/CodeLifeBalance"
+            href="/configure"
             className="group flex items-center gap-2.5 px-7 py-3.5 rounded-md bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition-all shadow-[0_0_32px_-6px_var(--tw-shadow-color)] shadow-primary/50"
           >
-            <GitHubLogoIcon className="w-4 h-4" />
-            Github Repository
+            <Shield className="w-4 h-4" />
+            Configure Code Life Balance
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
           </Link>
         </section>
@@ -339,7 +351,7 @@ export default async function HomePage() {
             <span className="font-bold text-sm text-foreground">Code Life Balance</span>
           </div>
           <p className="font-mono text-sm text-muted-foreground">
-            GitHub REST API &middot; Read-only OAuth &middot; No data stored
+            GitHub Action &middot; Local CLI &middot; Zero-provider-access mode
           </p>
         </div>
       </footer>

@@ -2,7 +2,7 @@
 
 > Know when you live to code, and when you don't.
 
-A Next.js web app that signs you in with GitHub, analyzes your recent activity, and turns it into an interactive dashboard: commit timing, active hours, language distribution, top repositories, and a scored code-life balance report with personalized recommendations.
+Privacy-first GitHub activity analytics for the web, GitHub Actions, and the command line. Code Life Balance turns recent activity into commit timing, active hours, language distribution, repository insights, and a scored code-life balance report without requiring users to hand credentials to CodeLifeBalance.
 
 Built with Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, shadcn/ui, and Recharts.
 
@@ -10,7 +10,11 @@ Built with Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, shadc
 
 ## Features
 
-- **GitHub OAuth sign-in.** Encrypted, `httpOnly` cookie sessions via `iron-session`, with no database required.
+- **Privacy-first GitHub Action.** Runs inside the user's GitHub Actions runner and generates SVG, JSON, and Markdown without sending the token or report to CodeLifeBalance.
+- **Local CLI.** Uses `GITHUB_TOKEN` or an existing `gh auth` session and writes the same artifacts locally.
+- **Workflow configurator.** The `/configure` page generates workflow YAML and the equivalent CLI command entirely in the browser.
+- **Public username viewer.** Public activity remains available without authorization.
+- **Legacy hosted OAuth dashboard.** Still available during the migration, but no longer the primary path.
 - **Balance score (0 to 100).** Derived from weekend, after-hours, late-night, and commit-volume patterns, with actionable recommendations.
 - **Commit timing analysis.** Hour-of-day and day-of-week distributions, peak hour and day, plus five named time sessions (Early Bird, Morning, Afternoon, Evening, Night Owl).
 - **Language breakdown.** Primary-language distribution across your owned repositories.
@@ -20,9 +24,11 @@ Built with Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, shadc
 - **Light and dark themes.** A light, dark, and system toggle in the header, persisted in `localStorage` and applied before first paint so there is no flash.
 
 
-## Privacy-first GitHub Action (experimental)
+## Privacy-first usage
 
-Step 1 of the privacy-first architecture is now implemented on this branch. The Action runs the analysis inside the user's own GitHub Actions runner. It does not send the GitHub token or generated report to a CodeLifeBalance service.
+### GitHub Action
+
+The recommended mode runs on GitHub's runner and keeps credentials in GitHub.
 
 ```yaml
 name: Code Life Balance
@@ -30,7 +36,7 @@ name: Code Life Balance
 on:
   workflow_dispatch:
   schedule:
-    - cron: "17 3 * * *"
+    - cron: "17 3 * * 1"
 
 permissions:
   contents: write
@@ -41,30 +47,56 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: alihd-tech/CodeLifeBalance@feature/privacy-first-action-core
+      - uses: alihd-tech/CodeLifeBalance@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           username: ${{ github.repository_owner }}
-          timezone: UTC
-          output-dir: code-life-balance
+          timezone: "UTC"
+          workday-start: "9"
+          workday-end: "18"
+          theme: "dark"
+          card-style: "detailed"
+          formats: "svg,json,markdown"
+          output-dir: "code-life-balance"
           commit: "true"
 ```
 
-The Action currently analyzes public profile activity using GitHub's API and generates:
+For private owned repositories, create a user-owned fine-grained token with only the read access you want, store it as `CODE_LIFE_TOKEN`, pass that secret as `github-token`, and set `include-private: "true"`. Private mode verifies that the token owner matches the username being analyzed.
 
-- `code-life-balance/code-life.svg` — embeddable profile/report card.
-- `code-life-balance/stats.json` — machine-readable analysis.
-- `code-life-balance/report.md` — Markdown summary.
+### Local CLI
 
-The runtime is dependency-free and calls GitHub's API directly from the runner. Private multi-repository analysis with a user-owned fine-grained token is planned as the next Action capability.
+Authenticate with GitHub CLI:
 
+```bash
+gh auth login
+```
+
+Then run:
+
+```bash
+pnpm cli -- --username octocat --timezone Europe/Helsinki
+```
+
+Private mode stays on the local machine:
+
+```bash
+pnpm cli -- --include-private --timezone Europe/Helsinki
+```
+
+The CLI prefers `GITHUB_TOKEN`, then `gh auth token`. Public analysis can run without credentials when a username is supplied.
+
+### Web configurator
+
+Open `/configure` in the web app to choose timezone, work hours, theme, card style, output formats, schedule, and private/public mode. The page only generates configuration and does not request a GitHub token.
 
 ## Architecture
 
 ```
 app/
   page.tsx                    Landing page
-  dashboard/page.tsx          Server component; requires a session, renders the profile banner
+  dashboard/page.tsx          Legacy hosted authenticated dashboard
+  configure/page.tsx          Privacy-first Action and CLI configurator
+  u/[username]/page.tsx       Public username viewer
   layout.tsx                  Fonts, metadata, Vercel Analytics (production only)
   api/
     auth/route.ts             Redirects to the GitHub OAuth authorize URL
@@ -85,12 +117,16 @@ lib/
   theme.ts                    Theme storage key and the pre-paint init script
 packages/
   core/index.mjs              Provider-agnostic analytics engine shared by every surface
+  github-client/index.mjs     Reusable GitHub REST transport for Action and CLI
+  report/index.mjs            Shared SVG, JSON, and Markdown report rendering
 action/
   index.mjs                   Dependency-free GitHub Action runtime
+cli/
+  index.mjs                   Local privacy-first command line interface
 action.yml                    GitHub Action metadata and inputs
 ```
 
-Data flow: the dashboard page verifies the session on the server, then `DashboardClient` fetches `/api/analyze` with SWR. That route calls `analyzeUser()` in [lib/github.ts](lib/github.ts), which fetches repositories and events and passes normalized data into the provider-agnostic engine in `packages/core/index.mjs`. The GitHub Action uses the same core without going through the Next.js server. Responses in the web app are cached for five minutes on the server (`next.revalidate`) and deduped for five minutes on the client.
+The analytics engine in `packages/core/index.mjs` is provider-agnostic. The GitHub Action and CLI share `packages/github-client` for GitHub REST access and `packages/report` for SVG, JSON, and Markdown generation. The public and legacy hosted web views reuse the same core through `lib/github.ts`. The recommended private path never goes through the Next.js server.
 
 **Data sources and limits.** Repositories come from `GET /user/repos` (owner affiliation, up to 5 pages). Activity comes from `GET /users/{username}/events` (up to 3 pages). The GitHub Events API only exposes roughly the last 90 days and 300 events, so all commit-timing metrics describe recent activity rather than your full history. The shared analytics core buckets timestamps in an explicit IANA timezone. The web app currently defaults to UTC; the Action exposes a `timezone` input.
 
@@ -163,6 +199,7 @@ Open [http://localhost:3000](http://localhost:3000) and click **Analyze my GitHu
 | `pnpm start` | Serve the production build. |
 | `pnpm lint` | Run ESLint. |
 | `pnpm test:core` | Run provider-agnostic analytics engine tests. |
+| `pnpm cli -- --help` | Show local CLI options. |
 
 ## Deployment
 
@@ -189,9 +226,18 @@ muted text about 7.7:1 in light and 8.7:1 in dark, and the primary green clears
 
 ## Privacy and permissions
 
-- The OAuth flow requests the `read:user` and `repo` scopes. `repo` grants read *and write* access to private repositories. The app only reads, but if you do not need private repository data, narrowing the scope in [app/api/auth/route.ts](app/api/auth/route.ts) is recommended.
-- The access token and profile are stored only in an encrypted, `httpOnly` session cookie that expires after 24 hours. Nothing is persisted server-side and there is no database.
-- All analysis runs on your own server against the GitHub API, and no activity data is sent to third parties. Vercel Analytics is loaded in production builds only.
+Code Life Balance now has distinct trust modes:
+
+| Mode | Credential location | CodeLifeBalance receives token? | Private repository support |
+| --- | --- | --- | --- |
+| GitHub Action | GitHub Actions secret/runtime | No | Optional with user-owned fine-grained token |
+| Local CLI | Local environment or `gh auth` | No | Optional |
+| Public viewer | None required | No | No |
+| Legacy hosted dashboard | Encrypted browser session cookie | Hosted app handles token | Yes |
+
+The Action runtime calls GitHub's API directly and writes artifacts only into the workflow workspace. The local CLI does the same on the user's machine. The configurator never asks for credentials.
+
+The legacy OAuth flow is retained during migration and still requests the broad `repo` scope. It should not be treated as the preferred privacy-first path and is expected to be reduced or replaced in the later GitHub App phase.
 
 ## Tech stack
 

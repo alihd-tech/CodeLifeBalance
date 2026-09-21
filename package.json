@@ -12,7 +12,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test:core": "node --test packages/core/index.test.mjs"
+    "test:core": "node --test packages/core/index.test.mjs",
+    "cli": "node cli/index.mjs",
+    "test:report": "node --test packages/report/index.test.mjs",
+    "test": "node --test packages/core/index.test.mjs packages/report/index.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
@@ -44,5 +47,8 @@
     "overrides": {
       "hono": "4.12.25"
     }
+  },
+  "bin": {
+    "code-life-balance": "./cli/index.mjs"
   }
 }
