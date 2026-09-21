@@ -6,7 +6,7 @@ import { fetchUserSnapshot } from "../packages/github-client/index.mjs"
 import { writeReportArtifacts } from "../packages/report/index.mjs"
 
 function input(name) {
-  return (process.env[`INPUT_${name.replace(/-/g, "_").toUpperCase()}`] || "").trim()
+  return (process.env[`INPUT_${name.replace(/ /g, "_").toUpperCase()}`] || "").trim()
 }
 
 function boolInput(name) {
