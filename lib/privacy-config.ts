@@ -1,7 +1,6 @@
 export type ReportFormat = "svg" | "json" | "markdown"
 export type ReportTheme = "dark" | "light"
 export type CardStyle = "detailed" | "compact"
-export type SchedulePreset = "manual" | "daily" | "weekly" | "monthly" | "custom"
 
 export interface PrivacyConfig {
   username: string
@@ -12,8 +11,6 @@ export interface PrivacyConfig {
   cardStyle: CardStyle
   formats: ReportFormat[]
   outputDir: string
-  schedule: SchedulePreset
-  customCron: string
   commit: boolean
   includePrivate: boolean
 }
@@ -27,29 +24,15 @@ export const defaultPrivacyConfig: PrivacyConfig = {
   cardStyle: "detailed",
   formats: ["svg", "json", "markdown"],
   outputDir: "code-life-balance",
-  schedule: "weekly",
-  customCron: "17 3 * * 1",
   commit: true,
   includePrivate: false,
 }
 
+const CLI_RELEASE_PACKAGE =
+  "https://github.com/alihd-tech/CodeLifeBalance/releases/download/v1.2.0/code-life-balance-1.2.0.tgz"
+
 function quoted(value: string) {
   return JSON.stringify(value)
-}
-
-function cronFor(config: PrivacyConfig) {
-  switch (config.schedule) {
-    case "daily":
-      return "17 3 * * *"
-    case "weekly":
-      return "17 3 * * 1"
-    case "monthly":
-      return "17 3 1 * *"
-    case "custom":
-      return config.customCron.trim() || "17 3 * * 1"
-    default:
-      return null
-  }
 }
 
 function workflowExpression(value: string) {
@@ -57,21 +40,12 @@ function workflowExpression(value: string) {
 }
 
 export function generateWorkflow(config: PrivacyConfig) {
-  const cron = cronFor(config)
   const permissions = config.commit ? "write" : "read"
   const token = config.includePrivate
     ? workflowExpression("secrets.CODE_LIFE_TOKEN")
     : workflowExpression("secrets.GITHUB_TOKEN")
   const username = config.username.trim() || workflowExpression("github.repository_owner")
   const formats = config.formats.length ? config.formats.join(",") : "svg"
-
-  const triggers = cron
-    ? `on:
-  workflow_dispatch:
-  schedule:
-    - cron: ${quoted(cron)}`
-    : `on:
-  workflow_dispatch:`
 
   const upload = config.commit
     ? ""
@@ -85,7 +59,8 @@ export function generateWorkflow(config: PrivacyConfig) {
 
   return `name: Code Life Balance
 
-${triggers}
+on:
+  workflow_dispatch:
 
 permissions:
   contents: ${permissions}
@@ -117,7 +92,8 @@ jobs:
 
 export function generateCliCommand(config: PrivacyConfig) {
   const args = [
-    "pnpm cli --",
+    "npx --yes",
+    CLI_RELEASE_PACKAGE,
     config.username.trim() ? `--username ${shellQuote(config.username.trim())}` : "",
     `--timezone ${shellQuote(config.timeZone)}`,
     `--workday-start ${config.workdayStartHour}`,
