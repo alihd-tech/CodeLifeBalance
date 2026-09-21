@@ -4,6 +4,10 @@ All notable Code Life Balance releases are documented here.
 
 ## Unreleased
 
+_No changes yet._
+
+## 1.1.0 - 2026-09-21
+
 ### Added
 - Permanent CI with tests, strict typecheck, production build, and Action self-test.
 - Recurring smoke test for the published `v1` GitHub Action.
