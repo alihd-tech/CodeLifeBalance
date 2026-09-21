@@ -1,20 +1,8 @@
 import { Analytics } from "@vercel/analytics/next"
 import type { Metadata, Viewport } from "next"
-import { JetBrains_Mono, Syne } from "next/font/google"
 import "./globals.css"
 import { THEME_INIT_SCRIPT } from "@/lib/theme"
 import { absoluteUrl, siteConfig } from "@/lib/site"
-
-const _syne = Syne({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-sans",
-})
-const _jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-mono",
-})
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
