@@ -80,16 +80,16 @@ Authenticate with GitHub CLI:
 gh auth login
 ```
 
-Then run:
+Then run the current stable CLI release directly:
 
 ```bash
-pnpm cli -- --username octocat --timezone Europe/Helsinki
+npx --yes https://github.com/alihd-tech/CodeLifeBalance/releases/download/v1.2.0/code-life-balance-1.2.0.tgz --username octocat --timezone Europe/Helsinki
 ```
 
 Private mode stays on the local machine:
 
 ```bash
-pnpm cli -- --include-private --timezone Europe/Helsinki
+npx --yes https://github.com/alihd-tech/CodeLifeBalance/releases/download/v1.2.0/code-life-balance-1.2.0.tgz --include-private --timezone Europe/Helsinki
 ```
 
 The CLI prefers `GITHUB_TOKEN`, then `gh auth token`. Public analysis can run without credentials when a username is supplied.
