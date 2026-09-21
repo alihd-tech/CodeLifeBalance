@@ -19,6 +19,46 @@ Built with Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, shadc
 - **Streaks and totals.** Current streak, longest streak, total stars and forks, average commits per day.
 - **Light and dark themes.** A light, dark, and system toggle in the header, persisted in `localStorage` and applied before first paint so there is no flash.
 
+
+## Privacy-first GitHub Action (experimental)
+
+Step 1 of the privacy-first architecture is now implemented on this branch. The Action runs the analysis inside the user's own GitHub Actions runner. It does not send the GitHub token or generated report to a CodeLifeBalance service.
+
+```yaml
+name: Code Life Balance
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: alihd-tech/CodeLifeBalance@feature/privacy-first-action-core
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ github.repository_owner }}
+          timezone: UTC
+          output-dir: code-life-balance
+          commit: "true"
+```
+
+The Action currently analyzes public profile activity using GitHub's API and generates:
+
+- `code-life-balance/code-life.svg` — embeddable profile/report card.
+- `code-life-balance/stats.json` — machine-readable analysis.
+- `code-life-balance/report.md` — Markdown summary.
+
+The runtime is dependency-free and calls GitHub's API directly from the runner. Private multi-repository analysis with a user-owned fine-grained token is planned as the next Action capability.
+
+
 ## Architecture
 
 ```
@@ -39,15 +79,20 @@ components/
   *.tsx                       Individual charts and panels
   ui/                         shadcn/ui primitives
 lib/
-  github.ts                   GitHub API fetching and all analysis logic
+  github.ts                   GitHub API transport; delegates calculations to the shared core
   session.ts                  iron-session configuration and types
   site.ts                     Canonical URL, authorship and SEO copy
   theme.ts                    Theme storage key and the pre-paint init script
+packages/
+  core/index.mjs              Provider-agnostic analytics engine shared by every surface
+action/
+  index.mjs                   Dependency-free GitHub Action runtime
+action.yml                    GitHub Action metadata and inputs
 ```
 
-Data flow: the dashboard page verifies the session on the server, then `DashboardClient` fetches `/api/analyze` with SWR. That route calls `analyzeUser()` in [lib/github.ts](lib/github.ts), which fetches repositories and events in parallel and computes every derived metric in a single pass. Responses are cached for five minutes on the server (`next.revalidate`) and deduped for five minutes on the client.
+Data flow: the dashboard page verifies the session on the server, then `DashboardClient` fetches `/api/analyze` with SWR. That route calls `analyzeUser()` in [lib/github.ts](lib/github.ts), which fetches repositories and events and passes normalized data into the provider-agnostic engine in `packages/core/index.mjs`. The GitHub Action uses the same core without going through the Next.js server. Responses in the web app are cached for five minutes on the server (`next.revalidate`) and deduped for five minutes on the client.
 
-**Data sources and limits.** Repositories come from `GET /user/repos` (owner affiliation, up to 5 pages). Activity comes from `GET /users/{username}/events` (up to 3 pages). The GitHub Events API only exposes roughly the last 90 days and 300 events, so all commit-timing metrics describe recent activity rather than your full history. Timestamps are bucketed in the server's local timezone.
+**Data sources and limits.** Repositories come from `GET /user/repos` (owner affiliation, up to 5 pages). Activity comes from `GET /users/{username}/events` (up to 3 pages). The GitHub Events API only exposes roughly the last 90 days and 300 events, so all commit-timing metrics describe recent activity rather than your full history. The shared analytics core buckets timestamps in an explicit IANA timezone. The web app currently defaults to UTC; the Action exposes a `timezone` input.
 
 ## Getting started
 
@@ -117,6 +162,7 @@ Open [http://localhost:3000](http://localhost:3000) and click **Analyze my GitHu
 | `pnpm build` | Create a production build. |
 | `pnpm start` | Serve the production build. |
 | `pnpm lint` | Run ESLint. |
+| `pnpm test:core` | Run provider-agnostic analytics engine tests. |
 
 ## Deployment
 

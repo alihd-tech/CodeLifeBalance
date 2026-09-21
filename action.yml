@@ -1,0 +1,42 @@
+name: "Code Life Balance"
+description: "Generate privacy-first GitHub activity and code-life balance reports inside your own GitHub Actions runner."
+author: "Ali HD"
+
+branding:
+  icon: "activity"
+  color: "green"
+
+inputs:
+  github-token:
+    description: "GitHub token used only inside this runner to call the GitHub API. Usually secrets.GITHUB_TOKEN."
+    required: true
+  username:
+    description: "GitHub username to analyze. Defaults to the workflow actor."
+    required: false
+    default: ""
+  timezone:
+    description: "IANA timezone used for commit timing, for example Europe/Helsinki."
+    required: false
+    default: "UTC"
+  output-dir:
+    description: "Directory where generated SVG, JSON, and Markdown files are written."
+    required: false
+    default: "code-life-balance"
+  commit:
+    description: "Commit and push generated artifacts back to the current repository."
+    required: false
+    default: "false"
+
+outputs:
+  score:
+    description: "Computed code-life balance score."
+  svg-path:
+    description: "Path to the generated SVG card."
+  json-path:
+    description: "Path to the generated JSON report."
+  markdown-path:
+    description: "Path to the generated Markdown report."
+
+runs:
+  using: "node20"
+  main: "action/index.mjs"
